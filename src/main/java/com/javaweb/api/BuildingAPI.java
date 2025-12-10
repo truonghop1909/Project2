@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -30,11 +31,10 @@ public class BuildingAPI {
 	@Autowired
 	private BuildingService buildingService;
 	@GetMapping(value="/api/building/")
-	public List<BuildingDTO> getBuilding(@RequestParam(name="name", required = false) String name,
-										@RequestParam(name="district", required = false) String district
-										
-			) {
-		List<BuildingDTO> result = buildingService.findAll(name, district);
+	public List<BuildingDTO> getBuilding(@RequestParam Map<String, Object> params,
+										@RequestParam (name="typeCode", required = false) List<String> typeCode
+			){
+		List<BuildingDTO> result = buildingService.findAll(params, typeCode);
 	return result;
 }
 	
