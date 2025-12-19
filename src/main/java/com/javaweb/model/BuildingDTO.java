@@ -1,8 +1,8 @@
 package com.javaweb.model;
 
 public class BuildingDTO {
-
-    private String name;
+	private Integer id;
+	private String name;
     private String address;
 
     private Double floorArea;
@@ -20,6 +20,13 @@ public class BuildingDTO {
     public BuildingDTO() {}
 
     // ========== GETTERS & SETTERS ==========
+    public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
 
     public String getName() {
         return name;

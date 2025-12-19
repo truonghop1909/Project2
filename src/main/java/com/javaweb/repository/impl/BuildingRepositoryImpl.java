@@ -1,139 +1,33 @@
 package com.javaweb.repository.impl;
 
-import java.lang.reflect.Field;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
-import com.javaweb.Utils.ConnectionJDBCUtil;
-import com.javaweb.Utils.NumberUtil;
-import com.javaweb.Utils.StringUtil;
 import com.javaweb.builder.BuildingSearchBuilder;
-import com.javaweb.model.BuildingDTO;
+import com.javaweb.model.BuildingRequestDTO;
 import com.javaweb.repository.BuildingRepository;
 import com.javaweb.repository.entity.BuildingEntity;
+import com.javaweb.repository.entity.DistrictEntity;
 
 @Repository
-
+@Primary
 public class BuildingRepositoryImpl implements BuildingRepository{
-	
-	public static void joinTable(BuildingSearchBuilder buildingSearchBuilder, StringBuilder sql) {
-		Integer staffId = buildingSearchBuilder.getStaffId();
-		if(staffId != null) {
-			sql.append(" INNER JOIN assignmentbuilding asb ON b.id = asb.building_id ");
-		}
-		List<String> typeCode = buildingSearchBuilder.getTypeCode();
-		if(typeCode != null || typeCode.size() != 0) {
-			sql.append(" INNER JOIN buildingrenttype brt ON b.id = brt.building_id ");
-			sql.append(" INNER JOIN renttype rt ON rt.id = brt.renttype_id ");
-		}
-		Integer rentAreaTo = buildingSearchBuilder.getAreaTo();
-		Integer rentAreaFrom = buildingSearchBuilder.getAreaFrom();
-		if(rentAreaFrom != null || rentAreaTo != null) {
-			sql.append(" INNER JOIN rentarea ra ON b.id = ra.building_id ");
-		}
-	}
-	
-	public static void queryNormal(BuildingSearchBuilder buildingSearchBuilder, StringBuilder where) {
-		try {
-			Field[] fields = BuildingSearchBuilder.class.getDeclaredFields();
-			for(Field item : fields) {
-				item.setAccessible(true);
-				String fieldName = item.getName();
-				if(!fieldName.equals("staffId") && !fieldName.equals("typeCode") &&
-					!fieldName.startsWith("area") && !fieldName.startsWith("rentPrice")) {
-					Object value = item.get(buildingSearchBuilder);
-					if(value != null) {
-						if(item.getType().getName().equals("java.lang.Long") || item.getType().getName().equals("java.lang.Integer") || item.getType().getName().equals("java.lang.Double")) {
-							where.append(" AND b. " + fieldName + " = " + value);
-						} else if (item.getType().getName().equals("java.lang.String")){
-							where.append(" AND b. " + fieldName + " LIKE '%" + value + "%' ");
-						}
-					}
-				}
-				
-			}
-		} catch(Exception ex) {
-			ex.printStackTrace();
-		}
-		
-	}
-	
-	public static void querySpecial(BuildingSearchBuilder buildingSearchBuilder, StringBuilder where) {
-		Integer staffId = buildingSearchBuilder.getStaffId();
-		if(staffId != null) {
-			where.append(" AND asb.staff_id = " + staffId);
-		}
-		Integer rentAreaTo = buildingSearchBuilder.getAreaTo();
-		Integer rentAreaFrom = buildingSearchBuilder.getAreaFrom();
-		if(rentAreaTo != null || rentAreaFrom != null) {
-			if(rentAreaFrom != null) {
-				where.append(" AND ra.value >= " + rentAreaFrom);
-			}
-			if(rentAreaTo != null) {
-				where.append(" AND ra.value <= " + rentAreaTo);
-			}
-		}
-		Double rentPriceTo = buildingSearchBuilder.getRentPriceTo();
-		Double rentPriceFrom = buildingSearchBuilder.getRentPriceFrom();
-		if(rentPriceFrom != null || rentPriceTo != null) {
-			if(rentPriceFrom != null) {
-				where.append(" AND b.rent_price >= " + rentPriceFrom);
-			}
-			if(rentPriceTo != null) {
-				where.append(" AND b.rent_price <= " + rentPriceTo);
-			}
-		}
-		List<String> typeCode = buildingSearchBuilder.getTypeCode();
-		if(typeCode != null || typeCode.size() != 0) {
-			where.append(" AND rt.code IN ('" + String.join("','", typeCode) + "') ");
-		}
-	}
+	@PersistenceContext
+	private EntityManager entityManager;
+
 	@Override
 	public List<BuildingEntity> findAll(BuildingSearchBuilder buildingSearchBuilder) {
-		StringBuilder sql = new StringBuilder(" SELECT b.id, b.name, b.district_id, " + 
-				" b.street, b.ward, b.number_of_basement, " +
-				" b.floor_area, b.rent_price, service_fee, b.brokerage_fee, " + 
-				" b.manager_phone, b.manager_name " +
-				" FROM building b ");
-		joinTable(buildingSearchBuilder, sql);
-		StringBuilder where = new StringBuilder(" WHERE 1 = 1 ");
-		queryNormal(buildingSearchBuilder, where);
-		querySpecial(buildingSearchBuilder, where);
-		where.append(" GROUP BY b.id; ");
-		sql.append(where);
-		System.out.print("SQL: " + sql);
-		List<BuildingEntity> result = new ArrayList<>();
-	try(Connection conn = ConnectionJDBCUtil.getConnection(); 
-			Statement stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery(sql.toString());){
-		while(rs.next()) {
-			BuildingEntity building = new BuildingEntity();
-			building.setId(rs.getInt("id"));
-			building.setName(rs.getString("name"));
-			building.setStreet(rs.getString("street"));
-			building.setDistrictId(rs.getInt("district_id"));
-			building.setWard(rs.getString("ward"));
-			building.setNumberOfBasement(rs.getInt("number_of_basement"));
-            building.setFloorArea(rs.getDouble("floor_area"));
-            building.setRentPrice(rs.getDouble("rent_price"));
-            building.setServiceFee(rs.getDouble("service_fee"));
-            building.setBrokerageFee(rs.getDouble("brokerage_fee"));
-            building.setManagerName(rs.getString("manager_name"));
-            building.setManagerPhone(rs.getString("manager_phone"));
-			result.add(building);
-		}
-	} catch (SQLException e) {
-		e.printStackTrace();
-	}
-		return result;
+		// TODO Auto-generated method stub
+		//JDQL
+		String sql = "FROM BuildingEntity b WHERE b.name LIKE '%building%'";
+		Query query = entityManager.createQuery(sql,BuildingEntity.class);
+		return query.getResultList();
 	}
 
 	@Override
@@ -141,4 +35,126 @@ public class BuildingRepositoryImpl implements BuildingRepository{
 		// TODO Auto-generated method stub
 		
 	}
+
+	@Override
+	public void updateBuilding(Integer id, BuildingRequestDTO buildingRequestDTO) {
+
+	    BuildingEntity building = new BuildingEntity();
+
+	    // ===== ID (BẮT BUỘC) =====
+	    building.setId(id);
+
+	    // ===== BASIC INFO =====
+	    building.setName(buildingRequestDTO.getName());
+	    building.setWard(buildingRequestDTO.getWard());
+	    building.setStreet(buildingRequestDTO.getStreet());
+	    building.setStructure(buildingRequestDTO.getStructure());
+	    building.setNumberOfBasement(buildingRequestDTO.getNumberOfBasement());
+	    building.setFloorArea(buildingRequestDTO.getFloorArea());
+	    building.setDirection(buildingRequestDTO.getDirection());
+	    building.setLevel(buildingRequestDTO.getLevel());
+
+	    // ===== RENT & FEES =====
+	    building.setRentPrice(buildingRequestDTO.getRentPrice());
+	    building.setRentPriceDescription(buildingRequestDTO.getRentPriceDescription());
+	    building.setServiceFee(buildingRequestDTO.getServiceFee());
+	    building.setCarFee(buildingRequestDTO.getCarFee());
+	    building.setMotorFee(buildingRequestDTO.getMotorFee());
+	    building.setOvertimeFee(buildingRequestDTO.getOvertimeFee());
+	    building.setElectricityFee(buildingRequestDTO.getElectricityFee());
+	    building.setWaterFee(buildingRequestDTO.getWaterFee());
+	    building.setDeposit(buildingRequestDTO.getDeposit());
+	    building.setPayment(buildingRequestDTO.getPayment());
+	    building.setRentTime(buildingRequestDTO.getRentTime());
+	    building.setDecorationTime(buildingRequestDTO.getDecorationTime());
+
+	    // ===== MANAGER =====
+	    building.setManagerName(buildingRequestDTO.getManagerName());
+	    building.setManagerPhone(buildingRequestDTO.getManagerPhone());
+	    building.setBrokerageFee(buildingRequestDTO.getBrokerageFee());
+	    building.setNote(buildingRequestDTO.getNote());
+
+	    // ===== DISTRICT (FK) =====
+	    if (buildingRequestDTO.getDistrictId() != null) {
+	        DistrictEntity district =
+	                entityManager.getReference(
+	                        DistrictEntity.class,
+	                        buildingRequestDTO.getDistrictId()
+	                );
+	        building.setDistrict(district);
+	    }
+
+	    // ===== MERGE =====
+	    entityManager.merge(building);
+	}
+
+	@Override
+	public void createBuilding(BuildingRequestDTO buildingRequestDTO) {
+
+	    BuildingEntity building = new BuildingEntity();
+
+	    // ===== BASIC INFO =====
+	    building.setName(buildingRequestDTO.getName());
+	    building.setWard(buildingRequestDTO.getWard());
+	    building.setStreet(buildingRequestDTO.getStreet());
+	    building.setStructure(buildingRequestDTO.getStructure());
+	    building.setNumberOfBasement(buildingRequestDTO.getNumberOfBasement());
+	    building.setFloorArea(buildingRequestDTO.getFloorArea());
+	    building.setDirection(buildingRequestDTO.getDirection());
+	    building.setLevel(buildingRequestDTO.getLevel());
+
+	    // ===== RENT & FEES =====
+	    building.setRentPrice(buildingRequestDTO.getRentPrice());
+	    building.setRentPriceDescription(buildingRequestDTO.getRentPriceDescription());
+	    building.setServiceFee(buildingRequestDTO.getServiceFee());
+	    building.setCarFee(buildingRequestDTO.getCarFee());
+	    building.setMotorFee(buildingRequestDTO.getMotorFee());
+	    building.setOvertimeFee(buildingRequestDTO.getOvertimeFee());
+	    building.setElectricityFee(buildingRequestDTO.getElectricityFee());
+	    building.setWaterFee(buildingRequestDTO.getWaterFee());
+	    building.setDeposit(buildingRequestDTO.getDeposit());
+	    building.setPayment(buildingRequestDTO.getPayment());
+	    building.setRentTime(buildingRequestDTO.getRentTime());
+	    building.setDecorationTime(buildingRequestDTO.getDecorationTime());
+
+	    // ===== MANAGER =====
+	    building.setManagerName(buildingRequestDTO.getManagerName());
+	    building.setManagerPhone(buildingRequestDTO.getManagerPhone());
+	    building.setBrokerageFee(buildingRequestDTO.getBrokerageFee());
+	    building.setNote(buildingRequestDTO.getNote());
+
+	    // ===== DISTRICT (FK) =====
+	    if (buildingRequestDTO.getDistrictId() != null) {
+	        DistrictEntity district =
+	                entityManager.getReference(
+	                        DistrictEntity.class,
+	                        buildingRequestDTO.getDistrictId()
+	                );
+	        building.setDistrict(district);
+	    }
+
+	    // ===== INSERT =====
+	    entityManager.persist(building);
+	}
+
+	@Override
+    public void deleteBuilding(Integer id) {
+
+        entityManager.createNativeQuery(
+            "DELETE FROM assignmentbuilding WHERE building_id = :id"
+        ).setParameter("id", id).executeUpdate();
+
+        entityManager.createNativeQuery(
+            "DELETE FROM rentarea WHERE building_id = :id"
+        ).setParameter("id", id).executeUpdate();
+
+        entityManager.createNativeQuery(
+            "DELETE FROM buildingrenttype WHERE building_id = :id"
+        ).setParameter("id", id).executeUpdate();
+
+        entityManager.createNativeQuery(
+            "DELETE FROM building WHERE id = :id"
+        ).setParameter("id", id).executeUpdate();
+    }
+
 }

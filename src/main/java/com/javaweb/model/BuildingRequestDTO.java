@@ -1,120 +1,49 @@
-package com.javaweb.repository.entity;
+package com.javaweb.model;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+public class BuildingRequestDTO {
 
-import org.hibernate.annotations.ManyToAny;
-
-@Entity
-@Table(name = "building")
-public class BuildingEntity {
-	
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
-    @Column(name="name")
     private String name;
-    // Address info
-    @Column(name="ward")
+
+    // Address
     private String ward;
-    @Column(name="street")
     private String street;
-    @Column(name="structure")
+    private Integer districtId;
+
+    // Building info
     private String structure;
-    @Column(name="number_of_basement")
     private Integer numberOfBasement;
-    @Column(name="floor_area")
     private Double floorArea;
-    @Column(name="direction")
     private String direction;
-    @Column(name="level")
     private String level;
 
-    // Fees & prices
-    @Column(name="rent_price")
+    // Rent & fee
     private Double rentPrice;
-    @Column(name="rent_price_description")
     private String rentPriceDescription;
-    @Column(name="service_fee")
     private Double serviceFee;
-    @Column(name="car_fee")
     private Double carFee;
-    @Column(name="motor_fee")
     private Double motorFee;
-    @Column(name="overtime_fee")
     private Double overtimeFee;
-    @Column(name="electricity_fee")
     private String electricityFee;
-    @Column(name="water_fee")
     private String waterFee;
-    @Column(name="deposit")
     private String deposit;
-    @Column(name="payment")
     private String payment;
-    @Column(name="rent_time")
     private String rentTime;
-    @Column(name="decoration_time")
     private String decorationTime;
- // Manager
-    @Column(name="manager_name")
+
+    // Manager
     private String managerName;
-    @Column(name="manager_phone")
     private String managerPhone;
-    @Column(name="brokerage_fee")
     private Double brokerageFee;
-    @Column(name="note")
     private String note;
 
-	@ManyToOne()
-	@JoinColumn(name = "district_id")
-	private DistrictEntity district;
-    
-    
-    @OneToMany(mappedBy = "building", fetch = FetchType.LAZY)
-	private List<RentAreaEntiry> items = new ArrayList<>();
-    
-    public DistrictEntity getDistrict() {
-		return district;
-	}
-    public List<RentAreaEntiry> getItems() {
-		return items;
-	}
+    // Rent area (1 building - many rent area)
+    private List<String> rentAreas;
 
-
-	public void setDistrict(DistrictEntity district) {
-		this.district = district;
-	}
-	public void setItems(List<RentAreaEntiry> items) {
-		this.items = items;
-	}
-	
-
-    // ================================
-    // Constructors
-    // ================================
-    public BuildingEntity() {}
-
-    // ================================
-    // Getters & Setters
-    // ================================
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
+    // ====================
+    // Getter & Setter
+    // ====================
 
     public String getName() {
         return name;
@@ -138,6 +67,14 @@ public class BuildingEntity {
 
     public void setStreet(String street) {
         this.street = street;
+    }
+
+    public Integer getDistrictId() {
+        return districtId;
+    }
+
+    public void setDistrictId(Integer districtId) {
+        this.districtId = districtId;
     }
 
     public String getStructure() {
@@ -306,5 +243,13 @@ public class BuildingEntity {
 
     public void setNote(String note) {
         this.note = note;
+    }
+
+    public List<String> getRentAreas() {
+        return rentAreas;
+    }
+
+    public void setRentAreas(List<String> rentAreas) {
+        this.rentAreas = rentAreas;
     }
 }
