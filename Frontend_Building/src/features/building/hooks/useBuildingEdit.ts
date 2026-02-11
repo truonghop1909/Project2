@@ -1,13 +1,32 @@
 // features/building/hooks/useBuildingEdit.ts
-import { useEffect, useState } from "react";
-import { buildingService } from "../services/building.service";
-import { BuildingUpdate } from "../types/building.type";
+import { useState } from "react";
+import { buildingApi } from "../api/building.api";
+import { BuildingUpdate, Building } from "../types/building.type";
+import { mapBuildingDetailToUpdate } from "../mappers/building.mapper";
 
-export const useBuildingEdit = (buildingId: number) => {
+export const useBuildingEdit = () => {
   const [form, setForm] = useState<BuildingUpdate>({});
   const [loading, setLoading] = useState(false);
 
-  useBuildingEdit(buildingId);
+  const fetchBuilding = async (buildingId: number) => {
+    if (!buildingId) return;
 
-  return { form, setForm, loading };
+    setLoading(true);
+    try {
+      const res = await buildingApi.getById(buildingId);
+      setForm(mapBuildingDetailToUpdate(res.data));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetForm = () => setForm({});
+
+  return {
+    form,
+    setForm,
+    loading,
+    fetchBuilding,
+    resetForm,
+  };
 };

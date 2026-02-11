@@ -79,3 +79,40 @@ export interface BuildingUpdate {
     rentAreas?: number[];
     rentTypeCodes?: string[];
 }
+// Dùng cho GET /building/{id} (EDIT FORM)
+export interface BuildingDetail {
+  id: number;
+
+  name: string;
+  districtId: number;
+  ward: string;
+  street: string;
+  structure?: string;
+  direction?: string;
+  level?: string;
+
+  numberOfBasement?: number;
+  floorArea?: number;
+  rentPrice?: number;
+  rentPriceDescription?: string;
+
+  serviceFee?: number;
+  carFee?: number;
+  motorFee?: number;
+  overtimeFee?: number;
+  electricityFee?: string;
+  waterFee?: string;
+
+  deposit?: string;
+  payment?: string;
+  rentTime?: string;
+  decorationTime?: string;
+
+  managerName?: string;
+  managerPhone?: string;
+  brokerageFee?: number;
+  note?: string;
+
+  rentAreas?: number[];
+  rentTypeCodes?: string[];
+}

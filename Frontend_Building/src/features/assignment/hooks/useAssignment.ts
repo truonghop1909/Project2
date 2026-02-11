@@ -4,15 +4,22 @@ import { StaffAssignment } from "../types/assignment.type";
 
 export const useAssignment = (buildingId: number) => {
   const [staffs, setStaffs] = useState<StaffAssignment[]>([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!buildingId) return;
 
+    setLoading(true);
+    setStaffs([]); // 🔥 reset tránh data cũ
+
     assignmentService
       .loadStaff(buildingId)
-      .then(res => setStaffs(res.data));
+      .then(res => setStaffs(res.data))
+      .catch(err => {
+        console.error("Load staff failed", err);
+      })
+      .finally(() => setLoading(false));
   }, [buildingId]);
-
 
   const toggleStaff = (staffId: number) => {
     setStaffs(prev =>
@@ -35,6 +42,10 @@ export const useAssignment = (buildingId: number) => {
     });
   };
 
-
-  return { staffs, toggleStaff, save };
+  return {
+    staffs,
+    loading,
+    toggleStaff,
+    save,
+  };
 };

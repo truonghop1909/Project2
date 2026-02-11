@@ -12,7 +12,9 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addMapping("/api/**")
             .allowedOrigins("http://localhost:3000")
             .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-            .allowedHeaders("*")
-            .allowCredentials(true);
+            .allowedHeaders("Content-Type", "Authorization", "X-Requested-With", "Accept")
+            .exposedHeaders("Authorization")
+            .allowCredentials(true)
+            .maxAge(3600);
     }
 }

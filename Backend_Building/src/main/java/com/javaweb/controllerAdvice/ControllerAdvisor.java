@@ -41,4 +41,20 @@ public class ControllerAdvisor extends ResponseEntityExceptionHandler {
 		errorResponseDTO.setDetail(details);
 	return new ResponseEntity<>(errorResponseDTO, HttpStatus.BAD_GATEWAY);
 	}
+	
+	@ExceptionHandler(Exception.class)
+	public ResponseEntity<Object> handleGlobalException(
+			Exception ex, WebRequest request){
+		ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO();
+		errorResponseDTO.setError(ex.getMessage() != null ? ex.getMessage() : "Internal server error");
+		List<String> details = new ArrayList<>();
+		details.add(ex.getClass().getSimpleName());
+		errorResponseDTO.setDetail(details);
+		
+		// Log the full stack trace for debugging
+		ex.printStackTrace();
+		
+		return new ResponseEntity<>(errorResponseDTO, HttpStatus.INTERNAL_SERVER_ERROR);
+	}
 }
+

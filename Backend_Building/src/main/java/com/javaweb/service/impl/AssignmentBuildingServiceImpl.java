@@ -14,7 +14,7 @@ import com.javaweb.model.StaffAssignmentDTO;
 import com.javaweb.repository.AssignmentBuildingRepository;
 import com.javaweb.repository.UserRepository;
 import com.javaweb.repository.entity.AssignmentBuildingEntity;
-import com.javaweb.repository.entity.UserEntity;   // ✅ THÊM DÒNG NÀY
+import com.javaweb.repository.entity.UserEntity; // ✅ THÊM DÒNG NÀY
 import com.javaweb.service.AssignmentBuildingService;
 
 @Service
@@ -32,24 +32,20 @@ public class AssignmentBuildingServiceImpl implements AssignmentBuildingService 
     @Override
     public List<StaffAssignmentDTO> loadStaff(Integer buildingId) {
 
-        List<UserEntity> staffs =
-                userRepository.findByStatusAndRoles_Code(1, "STAFF");
+        List<UserEntity> staffs = userRepository.findByStatusAndRoles_Code(1, "ROLE_STAFF");
 
-        List<Integer> assignedStaffIds = assignmentRepo
-                .findByBuildingId(buildingId)
-                .stream()
-                .map(AssignmentBuildingEntity::getStaffId)
+        List<Integer> assignedStaffIds =
+        assignmentRepo.findStaffIdsByBuildingId(buildingId);
+
+
+
+        return staffs.stream()
+                .map(staff -> converter.toStaffAssignmentDTO(
+                        staff,
+                        assignedStaffIds.contains(staff.getId())))
                 .collect(Collectors.toList());
-        List<StaffAssignmentDTO> results = new ArrayList<>();
-
-        for (UserEntity staff : staffs) {
-            boolean checked = assignedStaffIds.contains(staff.getId());
-            results.add(converter.toStaffAssignmentDTO(staff, checked));
-        }
-        return results;
     }
 
-    @Override
     @Transactional
     public void assignBuilding(AssignmentBuildingDTO dto) {
 
@@ -57,8 +53,8 @@ public class AssignmentBuildingServiceImpl implements AssignmentBuildingService 
 
         for (Integer staffId : dto.getStaffIds()) {
             assignmentRepo.save(
-                converter.toEntity(dto.getBuildingId(), staffId)
-            );
+                    converter.toEntity(dto.getBuildingId(), staffId));
         }
     }
+
 }

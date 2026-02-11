@@ -5,9 +5,10 @@ import { useAssignment } from "../hooks/useAssignment";
 interface Props {
   buildingId: number;
   onClose: () => void;
+  onSuccess?: () => void;
 }
 
-export default function AssignmentModal({ buildingId, onClose }: Props) {
+export default function AssignmentModal({ buildingId, onClose, onSuccess }: Props) {
   const { staffs, toggleStaff, save } = useAssignment(buildingId);
 
   return (
@@ -41,6 +42,7 @@ export default function AssignmentModal({ buildingId, onClose }: Props) {
           <button
             onClick={async () => {
               await save();
+              onSuccess?.();
               onClose();
             }}
             className="px-3 py-1 bg-blue-500 text-white rounded"
