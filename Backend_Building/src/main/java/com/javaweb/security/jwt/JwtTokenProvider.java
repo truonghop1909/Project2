@@ -36,12 +36,13 @@ public class JwtTokenProvider {
     }
 
     // ✅ Tạo token
-    public String generateToken(String username, List<String> roles) {
+    public String generateToken(Integer userId, String username, List<String> roles) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpiration);
 
         return Jwts.builder()
                 .setSubject(username)
+                .claim("userId", userId)
                 .claim("roles", roles) // ⭐ THÊM ROLE VÀO PAYLOAD
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
@@ -49,15 +50,14 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    // ✅ Lấy username từ token
-    public String getUsernameFromJWT(String token) {
+    public Integer getUserIdFromJWT(String token) {
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(secretKey)
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
 
-        return claims.getSubject();
+        return claims.get("userId", Integer.class);
     }
 
     // ✅ Kiểm tra token hợp lệ

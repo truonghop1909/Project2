@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { assignmentService } from "../services/assignment.service";
+import { assignmentApi } from "../api/assignment.api";
 import { StaffAssignment } from "../types/assignment.type";
 
 export const useAssignment = (buildingId: number) => {
@@ -7,19 +7,25 @@ export const useAssignment = (buildingId: number) => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!buildingId) return;
+  if (!buildingId) return;
 
-    setLoading(true);
-    setStaffs([]); // 🔥 reset tránh data cũ
+  const loadData = async () => {
+    try {
+      setLoading(true);
 
-    assignmentService
-      .loadStaff(buildingId)
-      .then(res => setStaffs(res.data))
-      .catch(err => {
-        console.error("Load staff failed", err);
-      })
-      .finally(() => setLoading(false));
-  }, [buildingId]);
+      const res = await assignmentApi.getAssignedStaff(buildingId);
+
+      setStaffs(res.data);
+    } catch (err) {
+      console.error("Load staff failed", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  loadData();
+}, [buildingId]);
+
 
   const toggleStaff = (staffId: number) => {
     setStaffs(prev =>
@@ -36,7 +42,7 @@ export const useAssignment = (buildingId: number) => {
       .filter(s => s.checked)
       .map(s => s.staffId);
 
-    await assignmentService.assignBuilding({
+    await assignmentApi.assignBuilding({
       buildingId,
       staffIds,
     });

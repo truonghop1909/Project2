@@ -13,13 +13,13 @@ interface Props {
 export default function UserRow({ user, onUpdateUser }: Props) {
   const [open, setOpen] = useState(false);
   const [loadingStatus, setLoadingStatus] = useState(false);
+  const [openEdit, setOpenEdit] = useState(false);
 
   const toggleStatus = async () => {
     try {
       setLoadingStatus(true);
       const res = await userApi.toggleStatus(user.id);
 
-      // ✅ Update UI ngay khi backend trả user data
       if (res.data) {
         onUpdateUser(res.data);
       }
@@ -34,18 +34,41 @@ export default function UserRow({ user, onUpdateUser }: Props) {
   return (
     <>
       <tr className="hover:bg-gray-50 transition">
-        <td className="px-6 py-4 font-medium">{user.username}</td>
+        {/* ID */}
+        <td className="px-6 py-4 text-sm text-gray-500">
+          {user.id}
+        </td>
 
+        {/* Username */}
+        <td className="px-6 py-4 font-medium">
+          {user.username}
+        </td>
+
+        {/* Fullname */}
+        <td className="px-6 py-4">
+          {user.fullname || "—"}
+        </td>
+
+        {/* Phone */}
+        <td className="px-6 py-4">
+          {user.phone || "—"}
+        </td>
+
+        {/* Email */}
         <td className="px-6 py-4 text-gray-600">
           {user.email || "—"}
         </td>
 
+        {/* Roles */}
         <td className="px-6 py-4 text-center">
           <span className="inline-flex px-3 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
-            {user.roles?.length > 0 ? user.roles.join(", ") : "—"}
+            {user.roles?.length > 0
+              ? user.roles.join(", ")
+              : "—"}
           </span>
         </td>
 
+        {/* Status */}
         <td className="px-6 py-4 text-center">
           {user.status === 1 ? (
             <span className="inline-flex px-3 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700">
@@ -58,8 +81,16 @@ export default function UserRow({ user, onUpdateUser }: Props) {
           )}
         </td>
 
+        {/* Actions */}
         <td className="px-6 py-4">
           <div className="flex justify-center gap-3">
+            <button
+              onClick={() => setOpenEdit(true)}
+              className="text-indigo-600 hover:underline text-sm font-medium"
+            >
+              Cập nhật
+            </button>
+
             <button
               onClick={() => setOpen(true)}
               className="text-blue-600 hover:underline text-sm font-medium disabled:opacity-50"
@@ -71,15 +102,19 @@ export default function UserRow({ user, onUpdateUser }: Props) {
             <button
               onClick={toggleStatus}
               disabled={loadingStatus}
-              className={`min-w-[80px] text-center text-sm font-medium disabled:opacity-50 ${user.status === 1
-                  ? "text-red-600 hover:underline"
-                  : "text-green-600 hover:underline"
+              className={`min-w-[80px] text-sm font-medium disabled:opacity-50 ${user.status === 1
+                ? "text-red-600 hover:underline"
+                : "text-green-600 hover:underline"
                 }`}
             >
-
-              {loadingStatus ? "Đang xử lý..." : user.status === 1 ? "Khóa" : "Mở"}
+              {loadingStatus
+                ? "Đang xử lý..."
+                : user.status === 1
+                  ? "Khóa"
+                  : "Mở"}
             </button>
           </div>
+
         </td>
       </tr>
 
@@ -93,4 +128,3 @@ export default function UserRow({ user, onUpdateUser }: Props) {
     </>
   );
 }
-

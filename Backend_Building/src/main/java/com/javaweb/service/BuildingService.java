@@ -3,9 +3,11 @@ package com.javaweb.service;
 import java.util.List;
 import java.util.Map;
 
+import com.javaweb.builder.BuildingSearchBuilder;
 import com.javaweb.model.BuildingDTO;
 import com.javaweb.model.BuildingSearchDTO;
 import com.javaweb.model.BuildingUpdateDTO;
+import com.javaweb.model.UserDTO;
 import com.javaweb.repository.entity.BuildingEntity;
 
 public interface BuildingService {
@@ -14,4 +16,6 @@ public interface BuildingService {
 	void createBuilding(BuildingUpdateDTO buildingUpdateDTO);
 	void deleteBuilding(Integer id);
 	BuildingUpdateDTO findById(Integer id);   // ✅ THÊM DÒNG NÀY
+	List<BuildingSearchDTO> search(BuildingSearchBuilder builder);
+	List<UserDTO> getAssignedStaff(Integer buildingId);
 }

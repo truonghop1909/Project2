@@ -5,18 +5,28 @@ import { BuildingPermission } from "../../permissions";
 
 interface Props {
   buildings: Building[];
-  permission: BuildingPermission; // ✅ THÊM
-  onAssign: (buildingId: number) => void;
-  onEdit: (buildingId: number) => void;
-  onDelete: (buildingId: number) => void;
+  permission: BuildingPermission;
+
+  // ✅ optional
+  onAssign?: (buildingId: number) => void;
+  onEdit?: (buildingId: number) => void;
+  onDelete?: (buildingId: number) => void;
+
+  // ✅ nếu staff cần xem chi tiết
+  onView?: (buildingId: number) => void;
+  onUnassign?: (buildingId: number) => void;
+  onTake?: (buildingId: number) => void;
 }
 
 export default function BuildingTable({
-  permission,
   buildings,
+  permission,
   onAssign,
   onEdit,
   onDelete,
+  onView,
+  onUnassign,
+  onTake,
 }: Props) {
   return (
     <div className="overflow-x-auto rounded-lg border bg-white">
@@ -38,81 +48,89 @@ export default function BuildingTable({
         <tbody className="divide-y">
           {buildings.map((b) => (
             <tr key={b.id} className="hover:bg-gray-50">
-              {/* TÊN */}
-              <td className="px-3 py-2 max-w-[180px] truncate font-medium"
-                title={b.name}>
+              <td className="px-3 py-2 max-w-[180px] truncate font-medium" title={b.name}>
                 {b.name}
               </td>
 
-              {/* ĐỊA CHỈ */}
-              <td className="px-3 py-2 max-w-[260px] truncate text-gray-600"
-                title={b.address}>
+              <td className="px-3 py-2 max-w-[260px] truncate text-gray-600" title={b.address}>
                 {b.address}
               </td>
 
-              {/* DT SÀN */}
-              <td className="px-3 py-2 text-right">
-                {b.floorArea}
-              </td>
+              <td className="px-3 py-2 text-right">{b.floorArea}</td>
 
-              {/* GIÁ THUÊ */}
-              <td className="px-3 py-2 text-right">
-                {formatMoney(b.rentPrice)}
-              </td>
+              <td className="px-3 py-2 text-right">{formatMoney(b.rentPrice)}</td>
 
-              {/* PHÍ DV */}
-              <td className="px-3 py-2 text-right">
-                {formatMoney(b.serviceFee)}
-              </td>
+              <td className="px-3 py-2 text-right">{formatMoney(b.serviceFee)}</td>
 
-              {/* QL */}
-              <td className="px-3 py-2 max-w-[150px] truncate"
-                title={b.managerName}>
+              <td className="px-3 py-2 max-w-[150px] truncate" title={b.managerName}>
                 {b.managerName}
               </td>
 
-              {/* ĐIỆN THOẠI */}
-              <td className="px-3 py-2">
-                {b.managerPhone}
+              <td className="px-3 py-2">{b.managerPhone}</td>
+
+              <td className="px-3 py-2 text-right">{b.brokerageFee}%</td>
+
+              <td className="px-3 py-2 text-center">
+                <div className="flex flex-wrap justify-center gap-2">
+                  {/* ✅ VIEW (ai cũng có thể có) */}
+                  {onView && (
+                    <button
+                      onClick={() => onView(b.id)}
+                      className="rounded bg-gray-700 px-2 py-1 text-white hover:bg-gray-800"
+                    >
+                      Xem
+                    </button>
+                  )}
+
+                  {/* ✅ ASSIGN */}
+                  {permission.canAssign && onAssign && (
+                    <button
+                      onClick={() => onAssign(b.id)}
+                      className="rounded bg-blue-500 px-2 py-1 text-white hover:bg-blue-600"
+                    >
+                      Giao NV
+                    </button>
+                  )}
+
+                  {/* ✅ EDIT */}
+                  {permission.canEdit && onEdit && (
+                    <button
+                      onClick={() => onEdit(b.id)}
+                      className="rounded bg-yellow-500 px-2 py-1 text-white hover:bg-yellow-600"
+                    >
+                      Sửa
+                    </button>
+                  )}
+
+                  {/* ✅ DELETE */}
+                  {permission.canDelete && onDelete && (
+                    <button
+                      onClick={() => onDelete(b.id)}
+                      className="rounded bg-red-500 px-2 py-1 text-white hover:bg-red-600"
+                    >
+                      Xóa
+                    </button>
+                  )}
+                  {/* ✅ UNASSIGN */}
+                  {permission.canUnassign && onUnassign && (
+                    <button
+                      onClick={() => onUnassign(b.id)}
+                      className="rounded bg-red-600 px-2 py-1 text-white hover:bg-red-700"
+                    >
+                      Bỏ quản lý
+                    </button>
+                  )}
+                  {/* ✅ TAKE (STAFF nhận tòa nhà) */}
+                  {permission.canTake && onTake && (
+                    <button
+                      onClick={() => onTake(b.id)}
+                      className="rounded bg-green-600 px-2 py-1 text-white hover:bg-green-700"
+                    >
+                      Nhận quản lý
+                    </button>
+                  )}
+                </div>
               </td>
-
-              {/* HOA HỒNG */}
-              <td className="px-3 py-2 text-right">
-                {b.brokerageFee}%
-              </td>
-
-              {/* ACTION */}
-              <td className="px-3 py-2 text-center space-x-2">
-
-                {permission.canAssign && (
-                  <button
-                    onClick={() => onAssign(b.id)}
-                    className="rounded bg-blue-500 px-2 py-1 text-white hover:bg-blue-600"
-                  >
-                    Giao NV
-                  </button>
-                )}
-
-                {permission.canEdit && (
-                  <button
-                    onClick={() => onEdit(b.id)}
-                    className="rounded bg-yellow-500 px-2 py-1 text-white hover:bg-yellow-600"
-                  >
-                    Sửa
-                  </button>
-                )}
-
-                {permission.canDelete && (
-                  <button
-                    onClick={() => onDelete(b.id)}
-                    className="rounded bg-red-500 px-2 py-1 text-white hover:bg-red-600"
-                  >
-                    Xóa
-                  </button>
-                )}
-
-              </td>
-
             </tr>
           ))}
         </tbody>
@@ -121,10 +139,7 @@ export default function BuildingTable({
   );
 }
 
-/* ================= HELPER ================= */
 function formatMoney(value: number) {
-  if (value >= 1_000_000) {
-    return value.toLocaleString("vi-VN") + " đ";
-  }
+  if (value >= 1_000_000) return value.toLocaleString("vi-VN") + " đ";
   return value + " triệu";
 }

@@ -8,9 +8,9 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <AuthGuard requiredRole="ADMIN">
+    <AuthGuard requiredRole="ROLE_ADMIN">
       <div className="flex min-h-screen w-full">
-        <Sidebar role="ADMIN" />
+        <Sidebar roles={["ROLE_ADMIN"]} />
 
         <main className="flex-1 bg-gray-50">
           <div className="w-full p-6">

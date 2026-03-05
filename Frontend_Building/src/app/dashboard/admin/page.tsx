@@ -1,6 +1,19 @@
+"use client";
+
+import RecentActivity from "../components/RecentActivity";
+import StatCard from "../components/StatCard";
+
 export default function AdminDashboardPage() {
+  const activities = [
+    { content: "Admin tạo tòa nhà mới", time: "2 phút trước" },
+    { content: "Staff A giao khách cho tòa B", time: "30 phút trước" },
+    { content: "Cập nhật giá thuê tòa C", time: "Hôm qua" },
+  ];
+
   return (
     <div className="space-y-8">
+
+      {/* TITLE */}
       <h1 className="text-2xl font-semibold">
         Dashboard Admin
       </h1>
@@ -32,7 +45,7 @@ export default function AdminDashboardPage() {
       {/* CONTENT */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
-          <RecentActivity />
+          <RecentActivity activities={activities} />
         </div>
 
         <div className="bg-white rounded-xl shadow p-4">
@@ -46,11 +59,7 @@ export default function AdminDashboardPage() {
           </ul>
         </div>
       </div>
+
     </div>
   );
 }
-
-/* IMPORT */
-import RecentActivity from "../components/RecentActivity";
-import StatCard from "../components/StatCard";
-

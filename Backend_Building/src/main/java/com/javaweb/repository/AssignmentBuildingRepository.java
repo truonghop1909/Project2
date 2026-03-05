@@ -10,15 +10,21 @@ import com.javaweb.repository.entity.AssignmentBuildingEntity;
 import com.javaweb.repository.entity.AssignmentBuildingId;
 
 public interface AssignmentBuildingRepository
-        extends JpaRepository<AssignmentBuildingEntity, AssignmentBuildingId> {
+                extends JpaRepository<AssignmentBuildingEntity, AssignmentBuildingId> {
 
-    void deleteByBuildingId(Integer buildingId);
+        void deleteByBuildingId(Integer buildingId);
 
-    List<AssignmentBuildingEntity> findByBuildingId(Integer buildingId);
+        List<AssignmentBuildingEntity> findByBuildingId(Integer buildingId);
 
-    @Query("select ab.staffId from AssignmentBuildingEntity ab " +
-           "where ab.buildingId = :buildingId")
-    List<Integer> findStaffIdsByBuildingId(
-            @Param("buildingId") Integer buildingId);
+        @Query("select ab.staffId from AssignmentBuildingEntity ab " +
+                        "where ab.buildingId = :buildingId")
+        List<Integer> findStaffIdsByBuildingId(
+                        @Param("buildingId") Integer buildingId);
+
+        boolean existsByBuildingIdAndStaffId(Integer buildingId, Integer staffId);
+
+        void deleteByBuildingIdAndStaffId(Integer buildingId, Integer staffId);
+
+        @Query("SELECT ab.buildingId FROM AssignmentBuildingEntity ab WHERE ab.staffId = :staffId")
+        List<Integer> findBuildingIdsByStaffId(@Param("staffId") Integer staffId);
 }
-

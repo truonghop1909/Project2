@@ -23,4 +23,7 @@ public interface UserRepository extends JpaRepository<UserEntity, Integer> {
      * Lấy user theo username (dùng cho login)
      */
     UserEntity findByUsername(String username);
+
+    List<UserEntity> findByStatus(Integer status);
+
 }

@@ -1,4 +1,4 @@
-package com.javaweb.api;
+package com.javaweb.api.district;
 
 import java.util.List;
 

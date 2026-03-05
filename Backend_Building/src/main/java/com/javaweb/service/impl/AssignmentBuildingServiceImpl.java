@@ -1,6 +1,5 @@
 package com.javaweb.service.impl;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -8,17 +7,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.javaweb.builder.BuildingSearchBuilder;
 import com.javaweb.converter.AssignmentBuildingConverter;
 import com.javaweb.model.AssignmentBuildingDTO;
+import com.javaweb.model.BuildingSearchDTO;
 import com.javaweb.model.StaffAssignmentDTO;
 import com.javaweb.repository.AssignmentBuildingRepository;
+import com.javaweb.repository.BuildingRepository;
 import com.javaweb.repository.UserRepository;
 import com.javaweb.repository.entity.AssignmentBuildingEntity;
-import com.javaweb.repository.entity.UserEntity; // ✅ THÊM DÒNG NÀY
+import com.javaweb.repository.entity.UserEntity;
 import com.javaweb.service.AssignmentBuildingService;
+import com.javaweb.utils.SecurityUtils;
 
 @Service
 public class AssignmentBuildingServiceImpl implements AssignmentBuildingService {
+    @Autowired
+    private BuildingRepository buildingRepository;
 
     @Autowired
     private AssignmentBuildingRepository assignmentRepo;
@@ -34,10 +39,7 @@ public class AssignmentBuildingServiceImpl implements AssignmentBuildingService 
 
         List<UserEntity> staffs = userRepository.findByStatusAndRoles_Code(1, "ROLE_STAFF");
 
-        List<Integer> assignedStaffIds =
-        assignmentRepo.findStaffIdsByBuildingId(buildingId);
-
-
+        List<Integer> assignedStaffIds = assignmentRepo.findStaffIdsByBuildingId(buildingId);
 
         return staffs.stream()
                 .map(staff -> converter.toStaffAssignmentDTO(
@@ -57,4 +59,33 @@ public class AssignmentBuildingServiceImpl implements AssignmentBuildingService 
         }
     }
 
+    
+
+    @Override
+    @Transactional
+    public void assignCurrentStaff(Integer buildingId) {
+
+        Integer staffId = SecurityUtils.getCurrentUserId(); // bạn cần có hàm này
+
+        boolean exists = assignmentRepo
+                .existsByBuildingIdAndStaffId(buildingId, staffId);
+
+        if (exists) {
+            throw new RuntimeException("Bạn đã nhận tòa nhà này rồi");
+        }
+
+        AssignmentBuildingEntity entity = converter.toEntity(buildingId, staffId);
+
+        assignmentRepo.save(entity);
+    }
+
+    @Override
+    @Transactional
+    public void unassignCurrentStaff(Integer buildingId) {
+
+        Integer staffId = SecurityUtils.getCurrentUserId();
+
+        assignmentRepo.deleteByBuildingIdAndStaffId(buildingId, staffId);
+    }
 }
+

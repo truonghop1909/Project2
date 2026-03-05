@@ -18,6 +18,7 @@ import com.javaweb.model.BuildingDTO;
 import com.javaweb.model.BuildingRequestDTO;
 import com.javaweb.model.BuildingSearchDTO;
 import com.javaweb.model.BuildingUpdateDTO;
+import com.javaweb.model.UserDTO;
 import com.javaweb.repository.AssignmentBuildingRepository;
 import com.javaweb.repository.BuildingRentTypeRepository;
 import com.javaweb.repository.BuildingRepository;
@@ -28,7 +29,10 @@ import com.javaweb.repository.entity.BuildingEntity;
 import com.javaweb.repository.entity.BuildingRentTypeEntity;
 import com.javaweb.repository.entity.DistrictEntity;
 import com.javaweb.repository.entity.RentAreaEntity;
+import com.javaweb.repository.entity.UserEntity;
 import com.javaweb.service.BuildingService;
+
+import customexceptions.BuildingAssignedException;
 
 @Service
 public class BuildingServiceImpl implements BuildingService {
@@ -56,16 +60,15 @@ public class BuildingServiceImpl implements BuildingService {
     private DistrictRepository districtRepository;
     @Autowired
     private BuildingUpdateDTOConverter buildingUpdateDTOConverter;
+
     // ================= SEARCH (JDBC) =================
     @Override
     public List<BuildingSearchDTO> findAll(Map<String, Object> params, List<String> typeCode) {
 
-        BuildingSearchBuilder builder =
-                buildingSearchBuilderConverter.toBuildingSearchBuilder(params, typeCode);
+        BuildingSearchBuilder builder = buildingSearchBuilderConverter.toBuildingSearchBuilder(params, typeCode);
 
         return buildingRepository.findAll(builder);
     }
-
 
     // ================= FIND BY ID (JPA) =================
     @Override
@@ -79,48 +82,45 @@ public class BuildingServiceImpl implements BuildingService {
 
     // ================= CREATE (JPA) =================
     @Override
-	@Transactional
-	public void createBuilding(BuildingUpdateDTO dto) {
-	
-	    // 1️⃣ Convert DTO → Entity
-    	BuildingEntity entity = buildingUpdateDTOConverter.toEntity(dto);
-	    // 2️⃣ Set district relation (nếu dùng @ManyToOne)
-	    if (dto.getDistrictId() != null) {
-	        DistrictEntity district = districtRepository
-	            .findById(dto.getDistrictId())
-	            .orElseThrow(() -> new RuntimeException("District not found"));
-	        entity.setDistrict(district);
-	    }
-	
-	    // 3️⃣ Save building (lấy ID)
-	    buildingRepository.save(entity);
-	
-	    // 4️⃣ Save rent areas
-	    if (dto.getRentAreas() != null && !dto.getRentAreas().isEmpty()) {
-	        for (Integer value : dto.getRentAreas()) {
-	            RentAreaEntity rentArea = new RentAreaEntity();
-	            rentArea.setValue(value);
-	            rentArea.setBuilding(entity);
-	            rentAreaRepository.save(rentArea);
-	        }
-	    }
-	
-	    // 5️⃣ Save rent types
-	    if (dto.getRentTypeCodes() != null && !dto.getRentTypeCodes().isEmpty()) {
-	        for (String code : dto.getRentTypeCodes()) {
-	            Integer rentTypeId = rentTypeRepository.findIdByCode(code);
-	
-	            BuildingRentTypeEntity brt = new BuildingRentTypeEntity();
-	            brt.setBuildingId(entity.getId());
-	            brt.setRentTypeId(rentTypeId);
+    @Transactional
+    public void createBuilding(BuildingUpdateDTO dto) {
 
-	
-	            buildingRentTypeRepository.save(brt);
-	        }
-	    }
-	}
-	
-	
+        // 1️⃣ Convert DTO → Entity
+        BuildingEntity entity = buildingUpdateDTOConverter.toEntity(dto);
+        // 2️⃣ Set district relation (nếu dùng @ManyToOne)
+        if (dto.getDistrictId() != null) {
+            DistrictEntity district = districtRepository
+                    .findById(dto.getDistrictId())
+                    .orElseThrow(() -> new RuntimeException("District not found"));
+            entity.setDistrict(district);
+        }
+
+        // 3️⃣ Save building (lấy ID)
+        buildingRepository.save(entity);
+
+        // 4️⃣ Save rent areas
+        if (dto.getRentAreas() != null && !dto.getRentAreas().isEmpty()) {
+            for (Integer value : dto.getRentAreas()) {
+                RentAreaEntity rentArea = new RentAreaEntity();
+                rentArea.setValue(value);
+                rentArea.setBuilding(entity);
+                rentAreaRepository.save(rentArea);
+            }
+        }
+
+        // 5️⃣ Save rent types
+        if (dto.getRentTypeCodes() != null && !dto.getRentTypeCodes().isEmpty()) {
+            for (String code : dto.getRentTypeCodes()) {
+                Integer rentTypeId = rentTypeRepository.findIdByCode(code);
+
+                BuildingRentTypeEntity brt = new BuildingRentTypeEntity();
+                brt.setBuildingId(entity.getId());
+                brt.setRentTypeId(rentTypeId);
+
+                buildingRentTypeRepository.save(brt);
+            }
+        }
+    }
 
     // ================= UPDATE (JPA) =================
     @Override
@@ -148,68 +148,96 @@ public class BuildingServiceImpl implements BuildingService {
         buildingRepository.save(newEntity);
     }
 
-
     // ================= DELETE (JPA) =================
     @Override
     @Transactional
     public void deleteBuilding(Integer id) {
 
-        assignmentBuildingRepository.deleteByBuildingId(id);
+        BuildingEntity building = buildingRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Building không tồn tại"));
+
+        if (!building.getUsers().isEmpty()) {
+            throw new BuildingAssignedException(
+                    "Không thể xóa tòa nhà vì đang được giao cho nhân viên");
+        }
+
         rentAreaRepository.deleteByBuildingId(id);
-        buildingRentTypeRepository.deleteByBuildingId(id); // 🔥 BỔ SUNG
+        buildingRentTypeRepository.deleteByBuildingId(id);
 
-        buildingRepository.deleteById(id); // OK
+        buildingRepository.delete(building);
     }
-
 
     // ================= MAPPER =================
     private void mapDtoToEntity(BuildingUpdateDTO dto, BuildingEntity entity) {
 
-    if (dto.getName() != null) {
-        entity.setName(dto.getName());
+        if (dto.getName() != null) {
+            entity.setName(dto.getName());
+        }
+
+        if (dto.getStreet() != null) {
+            entity.setStreet(dto.getStreet());
+        }
+
+        if (dto.getWard() != null) {
+            entity.setWard(dto.getWard());
+        }
+
+        if (dto.getNumberOfBasement() != null) {
+            entity.setNumberOfBasement(dto.getNumberOfBasement());
+        }
+
+        if (dto.getFloorArea() != null) {
+            entity.setFloorArea(dto.getFloorArea());
+        }
+
+        if (dto.getRentPrice() != null) {
+            entity.setRentPrice(dto.getRentPrice());
+        }
+
+        if (dto.getServiceFee() != null) {
+            entity.setServiceFee(dto.getServiceFee());
+        }
+
+        if (dto.getBrokerageFee() != null) {
+            entity.setBrokerageFee(dto.getBrokerageFee());
+        }
+
+        if (dto.getManagerName() != null) {
+            entity.setManagerName(dto.getManagerName());
+        }
+
+        if (dto.getManagerPhone() != null) {
+            entity.setManagerPhone(dto.getManagerPhone());
+        }
+
+        if (dto.getDistrictId() != null) {
+            // chỉ cần set FK
+            entity.setDistrictId(dto.getDistrictId());
+        }
     }
 
-    if (dto.getStreet() != null) {
-        entity.setStreet(dto.getStreet());
+    @Override
+    public List<BuildingSearchDTO> search(BuildingSearchBuilder builder) {
+        return buildingRepository.findAll(builder);
     }
 
-    if (dto.getWard() != null) {
-        entity.setWard(dto.getWard());
-    }
+    @Override
+    public List<UserDTO> getAssignedStaff(Integer buildingId) {
+        BuildingEntity building = buildingRepository.findById(buildingId)
+                .orElseThrow(() -> new RuntimeException("Building not found"));
 
-    if (dto.getNumberOfBasement() != null) {
-        entity.setNumberOfBasement(dto.getNumberOfBasement());
-    }
+        List<UserEntity> staffs = building.getUsers();
 
-    if (dto.getFloorArea() != null) {
-        entity.setFloorArea(dto.getFloorArea());
-    }
+        List<UserDTO> result = new ArrayList<>();
 
-    if (dto.getRentPrice() != null) {
-        entity.setRentPrice(dto.getRentPrice());
-    }
+        for (UserEntity user : staffs) {
+            UserDTO dto = new UserDTO();
+            dto.setId(user.getId());
+            dto.setFullname(user.getFullname());
+            result.add(dto);
+        }
 
-    if (dto.getServiceFee() != null) {
-        entity.setServiceFee(dto.getServiceFee());
+        return result;
     }
-
-    if (dto.getBrokerageFee() != null) {
-        entity.setBrokerageFee(dto.getBrokerageFee());
-    }
-
-    if (dto.getManagerName() != null) {
-        entity.setManagerName(dto.getManagerName());
-    }
-
-    if (dto.getManagerPhone() != null) {
-        entity.setManagerPhone(dto.getManagerPhone());
-    }
-
-    if (dto.getDistrictId() != null) {
-        // chỉ cần set FK
-        entity.setDistrictId(dto.getDistrictId());
-    }
-}
-
 
 }

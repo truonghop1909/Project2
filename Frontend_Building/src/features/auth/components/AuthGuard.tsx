@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { jwtDecode } from "jwt-decode";
 
-type Role = "ADMIN" | "STAFF";
+type Role = "ROLE_ADMIN" | "ROLE_STAFF";
 
 interface Props {
   children: React.ReactNode;
@@ -14,6 +14,7 @@ interface Props {
 interface JwtPayload {
   roles?: string[] | string;
   authorities?: string[] | string;
+  exp?: number;
 }
 
 export default function AuthGuard({ children, requiredRole }: Props) {
@@ -23,7 +24,7 @@ export default function AuthGuard({ children, requiredRole }: Props) {
   useEffect(() => {
     const token = localStorage.getItem("token");
 
-    if (!token || token === "undefined") {
+    if (!token) {
       router.replace("/login");
       return;
     }
@@ -31,28 +32,32 @@ export default function AuthGuard({ children, requiredRole }: Props) {
     try {
       const decoded = jwtDecode<JwtPayload>(token);
 
-      const rawRoles =
-        decoded.roles ?? decoded.authorities ?? [];
+      // Check hết hạn
+      if (decoded.exp && decoded.exp * 1000 < Date.now()) {
+        localStorage.removeItem("token");
+        router.replace("/login");
+        return;
+      }
+
+      const rawRoles = decoded.roles ?? decoded.authorities ?? [];
 
       const roles = Array.isArray(rawRoles)
         ? rawRoles
         : [rawRoles];
 
-      if (requiredRole) {
-        const required = `ROLE_${requiredRole}`;
-        if (!roles.includes(required)) {
-          router.replace("/403");
-          return;
-        }
+      if (requiredRole && !roles.includes(requiredRole)) {
+        router.replace("/403");
+        return;
       }
 
       setAuthorized(true);
     } catch {
+      localStorage.removeItem("token");
       router.replace("/login");
     }
   }, [router, requiredRole]);
 
-  if (!authorized) return null; // ⛔ không render gì cả
+  if (!authorized) return null;
 
   return <>{children}</>;
 }

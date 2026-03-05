@@ -14,7 +14,7 @@ interface Props {
   onSuccess: () => void;
 }
 
-export default function BuildingModal({
+export default function BuildingModalHub({
   assignBuildingId,
   editBuildingId,
   showCreate,
@@ -25,17 +25,17 @@ export default function BuildingModal({
 }: Props) {
   return (
     <>
-      {assignBuildingId && (
+      {assignBuildingId !== null && (
         <AssignmentModal
           buildingId={assignBuildingId}
           onClose={() => {
             onCloseAssign();
-            onSuccess(); // 🔥 refresh building list
+            onSuccess();
           }}
         />
       )}
 
-      {editBuildingId && (
+      {editBuildingId !== null && (
         <BuildingEditModal
           buildingId={editBuildingId}
           onClose={onCloseEdit}
@@ -44,10 +44,7 @@ export default function BuildingModal({
       )}
 
       {showCreate && (
-        <BuildingCreateModal
-          onClose={onCloseCreate}
-          onSuccess={onSuccess}
-        />
+        <BuildingCreateModal onClose={onCloseCreate} onSuccess={onSuccess} />
       )}
     </>
   );

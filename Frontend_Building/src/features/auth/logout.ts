@@ -1,4 +1,4 @@
-import { setAuthToken } from "@/features/services/axiosClient";
+import { setAuthToken } from "@/shared/services/axiosClient";
 
 export const logout = () => {
   localStorage.removeItem("token");

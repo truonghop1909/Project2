@@ -2,21 +2,21 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Role } from "@/features/users/types/role";
+import { Role } from "@/features/auth/types/role";
 
 interface SidebarProps {
-  role: Role;
+  roles: Role[]; // <-- đổi sang mảng
 }
 
-export default function Sidebar({ role }: SidebarProps) {
+export default function Sidebar({ roles }: SidebarProps) {
   const router = useRouter();
 
-  const handleLogout = () => {
-    // 1. Xóa token
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken"); // nếu có
+  const isAdmin = roles.includes("ROLE_ADMIN");
+  const isStaff = roles.includes("ROLE_STAFF");
 
-    // 2. Chuyển về trang login
+  const handleLogout = () => {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
     router.replace("/login");
   };
 
@@ -24,35 +24,41 @@ export default function Sidebar({ role }: SidebarProps) {
     <aside className="w-64 bg-white border-r px-4 py-6">
       <nav className="space-y-1">
 
-        {/* Dashboard theo role */}
-        {role === "ADMIN" && (
-          <MenuItem href="/dashboard/admin" label="Dashboard" />
+        {/* DASHBOARD */}
+        {isAdmin && (
+          <MenuItem href="/dashboard/admin" label="Dashboard Admin" />
         )}
 
-        {role === "STAFF" && (
-          <MenuItem href="/dashboard/staff" label="Dashboard" />
+        {isStaff && (
+          <MenuItem href="/dashboard/staff" label="Dashboard Staff" />
         )}
 
         {/* ADMIN MENU */}
-        {role === "ADMIN" && (
+        {isAdmin && (
           <>
+            <p className="px-4 pt-4 text-xs font-semibold text-gray-400">
+              ADMIN
+            </p>
             <MenuItem href="/dashboard/admin/users" label="Quản lý người dùng" />
             <MenuItem href="/dashboard/admin/buildings" label="Quản lý tòa nhà" />
+            <MenuItem href="/dashboard/admin/customers" label="Quản lý khách hàng" />
             <MenuItem href="/dashboard/admin/reports" label="Báo cáo" />
           </>
         )}
 
         {/* STAFF MENU */}
-        {role === "STAFF" && (
+        {isStaff && (
           <>
-            <MenuItem href="/dashboard/orders" label="Đơn hàng" />
-            <MenuItem href="/dashboard/customers" label="Khách hàng" />
+            <p className="px-4 pt-4 text-xs font-semibold text-gray-400">
+              STAFF
+            </p>
+            <MenuItem href="/dashboard/staff/buildings" label="Quản lý tòa nhà" />
+            <MenuItem href="/dashboard/staff/customers" label="Quản lý khách hàng" />
           </>
         )}
 
         <hr className="my-3" />
 
-        {/* LOGOUT */}
         <button
           onClick={handleLogout}
           className="

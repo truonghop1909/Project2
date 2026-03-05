@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { login } from "@/features/auth/authApi";
-import { setAuthToken } from "@/features/services/axiosClient";
+import { setAuthToken } from "@/shared/services/axiosClient";
 import { jwtDecode } from "jwt-decode";
 
 type JwtPayload = {

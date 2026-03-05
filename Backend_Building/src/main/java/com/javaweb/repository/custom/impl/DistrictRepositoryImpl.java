@@ -8,10 +8,10 @@ import java.sql.Statement;
 
 import org.springframework.stereotype.Repository;
 
-import com.javaweb.Utils.ConnectionJDBCUtil;
 import com.javaweb.repository.DistrictRepository;
 import com.javaweb.repository.entity.BuildingEntity;
 import com.javaweb.repository.entity.DistrictEntity;
+import com.javaweb.utils.ConnectionJDBCUtil;
 
 @Repository
 public class DistrictRepositoryImpl implements DistrictRepositoryCustom{

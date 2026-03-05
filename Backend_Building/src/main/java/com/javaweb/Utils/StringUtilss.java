@@ -1,6 +1,6 @@
-package com.javaweb.Utils;
+package com.javaweb.utils;
 
-public class StringUtil {
+public class StringUtilss {
 	public static boolean checkString(String data) {
 		if(data != null && !data.equals("")) {
 			return true;

@@ -1,4 +1,4 @@
-package com.javaweb.api;
+package com.javaweb.api.building;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -12,6 +12,8 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,24 +24,28 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind. annotation.RestController;
+import org.springframework.web.bind.annotation.RestController;
 
+import com.javaweb.builder.BuildingSearchBuilder;
 import com.javaweb.model.BuildingDTO;
 import com.javaweb.model.BuildingRequestDTO;
 import com.javaweb.model.BuildingSearchDTO;
 import com.javaweb.model.BuildingUpdateDTO;
+import com.javaweb.model.UserDTO;
 import com.javaweb.repository.BuildingRepository;
 import com.javaweb.repository.entity.BuildingEntity;
+import com.javaweb.repository.entity.UserEntity;
 import com.javaweb.service.BuildingService;
-
+import com.javaweb.repository.UserRepository;
 import customexceptions.FieldRequiredException;
 
 @RestController
 @RequestMapping("/api/building")
 public class BuildingAPI {
-
     @Autowired
     private BuildingService buildingService;
+    @Autowired
+    private UserRepository userRepository;
 
     // ===== SEARCH LIST =====
     @GetMapping
@@ -76,4 +82,29 @@ public class BuildingAPI {
     public void deleteBuilding(@PathVariable Integer id) {
         buildingService.deleteBuilding(id);
     }
+
+    @GetMapping("/my-building")
+    public List<BuildingSearchDTO> getMyBuildings(
+            @RequestParam Map<String, Object> params,
+            @RequestParam(name = "typeCode", required = false) List<String> typeCode) {
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String userIdStr = auth.getName();
+
+        Integer userId = Integer.parseInt(userIdStr);
+
+        UserEntity user = userRepository.findById(userId)
+        .orElseThrow(() -> new RuntimeException("User not found with id = " + userId));
+
+
+        params.put("staffId", user.getId());
+
+        return buildingService.findAll(params, typeCode);
+    }
+
+    @GetMapping("/{id}/staff")
+    public List<UserDTO> getAssignedStaff(@PathVariable Integer id) {
+        return buildingService.getAssignedStaff(id);
+    }
+
 }

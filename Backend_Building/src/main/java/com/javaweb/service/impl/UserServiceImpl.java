@@ -9,6 +9,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import com.javaweb.converter.UserConverter;
 import com.javaweb.model.UserCreateRequestDTO;
 import com.javaweb.model.UserDTO;
 import com.javaweb.model.UserSearchDTO;
@@ -23,6 +24,8 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private UserConverter userConverter;
 
     @Autowired
     private RoleRepository roleRepository;
@@ -35,7 +38,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserDTO> searchUsers(UserSearchDTO searchDTO) {
         final UserSearchDTO search = searchDTO != null ? searchDTO : new UserSearchDTO();
-        
+
         List<UserEntity> users = userRepository.findAll();
 
         return users.stream()
@@ -129,11 +132,11 @@ public class UserServiceImpl implements UserService {
         // If no role filter selected, include all users
         if (!StringUtils.hasText(role))
             return true;
-        
+
         // If role filter is selected but user has no roles, exclude this user
         if (user.getRoles() == null || user.getRoles().isEmpty())
             return false;
-        
+
         // Check if any of user's roles match the filter
         return user.getRoles().stream()
                 .filter(r -> r != null && r.getCode() != null)
@@ -180,4 +183,28 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
     }
 
+    @Override
+    public UserDTO updateUser(Integer id, UserDTO dto) {
+
+        UserEntity user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Chỉ update thông tin được phép chỉnh sửa
+        user.setFullname(dto.getFullname());
+        user.setEmail(dto.getEmail());
+        user.setPhone(dto.getPhone());
+
+        userRepository.save(user);
+
+        return convertToDTO(user);
+    }
+
+    @Override
+    public List<UserDTO> getActiveStaff() {
+        List<UserEntity> entities = userRepository.findByStatusAndRoles_Code(1, "ROLE_STAFF");
+
+        return entities.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
 }

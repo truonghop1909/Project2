@@ -1,6 +1,6 @@
-package com.javaweb.Utils;
+package com.javaweb.utils;
 
-public class NumberUtil {
+public class NumberUtils {
 	public static boolean isNumber(String value) {
 		try {
 			Long number = Long.parseLong(value); 

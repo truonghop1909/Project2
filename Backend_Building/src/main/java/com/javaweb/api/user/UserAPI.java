@@ -89,4 +89,17 @@ public class UserAPI {
         return ResponseEntity.ok(updatedUser);
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<UserDTO> updateUser(
+            @PathVariable Integer id,
+            @RequestBody UserDTO dto) {
+
+        return ResponseEntity.ok(userService.updateUser(id, dto));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/active-staff")
+    public ResponseEntity<List<UserDTO>> getActiveStaff() {
+        return ResponseEntity.ok(userService.getActiveStaff());
+    }
 }

@@ -94,6 +94,7 @@ public class AuthAPI {
             System.out.println("✅ User roles: " + roles);
 
             String token = jwtTokenProvider.generateToken(
+                    user.getId(),
                     user.getUsername(),
                     roles);
 

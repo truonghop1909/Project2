@@ -10,7 +10,7 @@ import com.javaweb.model.StaffAssignmentDTO;
 import com.javaweb.service.AssignmentBuildingService;
 
 @RestController
-@RequestMapping("/api/buildings")
+@RequestMapping("/api/building")
 public class AssignmentBuildingAPI {
 
     @Autowired
@@ -34,5 +34,21 @@ public class AssignmentBuildingAPI {
             @RequestBody AssignmentBuildingDTO dto) {
 
         assignmentBuildingService.assignBuilding(dto);
+    }
+
+    // Staff Nhận tòa nhà
+    @PostMapping("/{buildingId}/assignment/current")
+    public void assignCurrentStaff(
+            @PathVariable Integer buildingId) {
+
+        assignmentBuildingService.assignCurrentStaff(buildingId);
+    }
+
+    // Staff Hủy nhận tòa nhà
+    @DeleteMapping("/{buildingId}/assignment/current")
+    public void unassignCurrentStaff(
+            @PathVariable Integer buildingId) {
+
+        assignmentBuildingService.unassignCurrentStaff(buildingId);
     }
 }

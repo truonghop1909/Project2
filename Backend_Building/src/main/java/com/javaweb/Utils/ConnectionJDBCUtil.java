@@ -1,4 +1,4 @@
-package com.javaweb.Utils;
+package com.javaweb.utils;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

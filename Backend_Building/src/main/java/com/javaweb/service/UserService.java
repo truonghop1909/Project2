@@ -19,6 +19,11 @@ public interface UserService {
     // ADMIN: xem chi tiết user
     UserDTO getUserById(Integer id);
 
-    //Chỉnh quyền 
+    // Chỉnh quyền
     void updateUserRoles(Integer userId, List<String> roleCodes);
+
+    // ADMIN: cập nhật thông tin user
+    UserDTO updateUser(Integer id, UserDTO userDTO);
+
+    List<UserDTO> getActiveStaff();
 }

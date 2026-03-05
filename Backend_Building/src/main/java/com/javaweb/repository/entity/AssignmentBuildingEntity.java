@@ -35,4 +35,5 @@ public class AssignmentBuildingEntity {
 	public void setStaffId(Integer staffId) {
 		this.staffId = staffId;
 	}
+	
 }

@@ -5,8 +5,8 @@ import java.util.Map;
 
 import org.springframework.stereotype.Component;
 
-import com.javaweb.Utils.MapUtil;
 import com.javaweb.builder.BuildingSearchBuilder;
+import com.javaweb.utils.MapUtil;
 
 @Component
 public class BuildingSearchBuilderConverter {
