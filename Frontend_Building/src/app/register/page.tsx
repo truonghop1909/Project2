@@ -2,59 +2,51 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { login } from "@/features/auth/authApi";
-import { setAuthToken } from "@/shared/services/axiosClient";
-import { jwtDecode } from "jwt-decode";
+import { register } from "@/features/auth/authApi";
 
-type JwtPayload = {
-  roles?: string[] | string;
-  authorities?: string[] | string;
-};
-
-export default function LoginPage() {
+export default function RegisterPage() {
   const router = useRouter();
   const [form, setForm] = useState({
     username: "",
     password: "",
+    confirmPassword: "",
   });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+    
+    // Kiểm tra mật khẩu xác nhận
+    if (form.password !== form.confirmPassword) {
+      setError("Mật khẩu xác nhận không khớp");
+      return;
+    }
+
+    // Kiểm tra độ dài mật khẩu
+    if (form.password.length < 6) {
+      setError("Mật khẩu phải có ít nhất 6 ký tự");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const res = await login(form);
-      const token = res.data.accessToken;
-
-      if (!token) {
-        alert("Không nhận được token");
-        return;
-      }
-
-      localStorage.setItem("token", token);
-      setAuthToken(token);
-
-      // 🔥 Decode JWT để redirect theo role
-      const decoded = jwtDecode<JwtPayload>(token);
-      const rawRoles =
-        decoded.roles ?? decoded.authorities ?? [];
-      const roles = Array.isArray(rawRoles)
-        ? rawRoles
-        : [rawRoles];
-
-      if (roles.includes("ROLE_ADMIN")) {
-        router.replace("/dashboard/admin");
-      } else if (roles.includes("ROLE_STAFF")) {
-        router.replace("/dashboard/staff");
-      } else {
-        router.replace("/");
-      }
+      await register({
+        username: form.username,
+        password: form.password,
+      });
+      
+      alert("Đăng ký thành công! Vui lòng đăng nhập.");
+      router.push("/login");
     } catch (err: any) {
-      alert(
+      const errorMessage = 
         err.response?.data?.message ||
-          "Sai tài khoản hoặc mật khẩu"
-      );
+        err.response?.data?.error ||
+        "Đăng ký thất bại";
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -67,12 +59,18 @@ export default function LoginPage() {
         className="w-full max-w-md bg-white p-8 rounded-xl shadow"
       >
         <h1 className="text-2xl font-semibold text-center mb-6">
-          Đăng nhập hệ thống
+          Đăng ký tài khoản
         </h1>
+
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded text-sm">
+            {error}
+          </div>
+        )}
 
         <input
           className="w-full mb-4 px-4 py-2 border rounded focus:outline-none focus:ring"
-          placeholder="Username"
+          placeholder="Tên đăng nhập"
           value={form.username}
           onChange={(e) =>
             setForm({ ...form, username: e.target.value })
@@ -83,7 +81,7 @@ export default function LoginPage() {
         <input
           type="password"
           className="w-full mb-4 px-4 py-2 border rounded focus:outline-none focus:ring"
-          placeholder="Password"
+          placeholder="Mật khẩu"
           value={form.password}
           onChange={(e) =>
             setForm({ ...form, password: e.target.value })
@@ -91,20 +89,32 @@ export default function LoginPage() {
           required
         />
 
+        <input
+          type="password"
+          className="w-full mb-4 px-4 py-2 border rounded focus:outline-none focus:ring"
+          placeholder="Xác nhận mật khẩu"
+          value={form.confirmPassword}
+          onChange={(e) =>
+            setForm({ ...form, confirmPassword: e.target.value })
+          }
+          required
+        />
+
         <button
+          type="submit"
           disabled={loading}
-          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
+          className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition disabled:bg-green-400"
         >
-          {loading ? "Đang đăng nhập..." : "Đăng nhập"}
+          {loading ? "Đang xử lý..." : "Đăng ký"}
         </button>
 
         <p className="text-sm text-center mt-4">
-          Chưa có tài khoản?{" "}
+          Đã có tài khoản?{" "}
           <a
-            href="/register"
+            href="/login"
             className="text-blue-600 hover:underline"
           >
-            Đăng ký
+            Đăng nhập
           </a>
         </p>
       </form>

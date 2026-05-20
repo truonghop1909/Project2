@@ -169,7 +169,7 @@ buildingrenttype
 
 assignmentbuilding
 
-user / role
+users / role
 
 👉 Quan hệ được thiết kế theo chuẩn 1–n, n–n
 

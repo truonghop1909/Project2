@@ -35,18 +35,22 @@ export default function LoginPage() {
       localStorage.setItem("token", token);
       setAuthToken(token);
 
-      // 🔥 Decode JWT để redirect theo role
+      // Decode JWT để redirect theo role
       const decoded = jwtDecode<JwtPayload>(token);
-      const rawRoles =
-        decoded.roles ?? decoded.authorities ?? [];
-      const roles = Array.isArray(rawRoles)
-        ? rawRoles
-        : [rawRoles];
+      const rawRoles = decoded.roles ?? decoded.authorities ?? [];
+      const roles = Array.isArray(rawRoles) ? rawRoles : [rawRoles];
 
-      if (roles.includes("ROLE_ADMIN")) {
+      // Kiểm tra role (bao gồm cả có hoặc không có prefix ROLE_)
+      const hasAdminRole = roles.some(role => role === "ADMIN" || role === "ROLE_ADMIN");
+      const hasStaffRole = roles.some(role => role === "STAFF" || role === "ROLE_STAFF");
+      const hasUserRole = roles.some(role => role === "USER" || role === "ROLE_USER");
+
+      if (hasAdminRole) {
         router.replace("/dashboard/admin");
-      } else if (roles.includes("ROLE_STAFF")) {
+      } else if (hasStaffRole) {
         router.replace("/dashboard/staff");
+      } else if (hasUserRole) {
+        router.replace("/dashboard/user");
       } else {
         router.replace("/");
       }

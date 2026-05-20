@@ -5,11 +5,17 @@ import java.util.Objects;
 
 public class AssignmentBuildingId implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     private Integer buildingId;
     private Integer staffId;
 
-    // 🔴 BẮT BUỘC PHẢI CÓ
     public AssignmentBuildingId() {
+    }
+
+    public AssignmentBuildingId(Integer buildingId, Integer staffId) {
+        this.buildingId = buildingId;
+        this.staffId = staffId;
     }
 
     public Integer getBuildingId() {
@@ -30,11 +36,13 @@ public class AssignmentBuildingId implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         AssignmentBuildingId that = (AssignmentBuildingId) o;
         return Objects.equals(buildingId, that.buildingId)
-            && Objects.equals(staffId, that.staffId);
+                && Objects.equals(staffId, that.staffId);
     }
 
     @Override

@@ -1,14 +1,14 @@
 // features/building/hooks/useBuilding.ts
 import { useCallback, useRef, useState } from "react";
 import { buildingApi } from "../api/building.api";
-import { Building, BuildingSearch } from "../types/building.type";
+import { Building, BuildingSearch, BuildingSearchDTO } from "../types/building.type";
 
-type RoleType = "ROLE_ADMIN" | "ROLE_STAFF";
+type RoleType = "" | "STAFF";
 
 export const useBuilding = (role: RoleType) => {
   // ✅ admin dùng allBuildings, staff dùng cả allBuildings + myBuildings
-  const [allBuildings, setAllBuildings] = useState<Building[]>([]);
-  const [myBuildings, setMyBuildings] = useState<Building[]>([]);
+  const [allBuildings, setAllBuildings] = useState<BuildingSearchDTO[]>([]);
+  const [myBuildings, setMyBuildings] = useState<BuildingSearchDTO[]>([]);
 
   const lastSearchAllRef = useRef<BuildingSearch | undefined>(undefined);
   const lastSearchMyRef = useRef<BuildingSearch | undefined>(undefined);
@@ -29,7 +29,7 @@ export const useBuilding = (role: RoleType) => {
   // - admin: fetchAll
   // - staff: fetchMy
   const fetchBuildings = useCallback((params?: BuildingSearch) => {
-    if (role === "ROLE_ADMIN") return fetchAllBuildings(params);
+    if (role === "") return fetchAllBuildings(params);
     return fetchMyBuildings(params);
   }, [role, fetchAllBuildings, fetchMyBuildings]);
 
@@ -51,7 +51,7 @@ export const useBuilding = (role: RoleType) => {
       alert("Đã bỏ quản lý thành công");
 
       // staff: reload cả 2 bảng để UI đồng bộ
-      if (role === "ROLE_STAFF") {
+      if (role === "STAFF") {
         await Promise.all([
           fetchMyBuildings(lastSearchMyRef.current),
           fetchAllBuildings(lastSearchAllRef.current),
@@ -70,7 +70,7 @@ export const useBuilding = (role: RoleType) => {
       await buildingApi.assignCurrent(id);
       alert("Nhận quản lý thành công");
 
-      if (role === "ROLE_STAFF") {
+      if (role === "STAFF") {
         await Promise.all([
           fetchMyBuildings(lastSearchMyRef.current),
           fetchAllBuildings(lastSearchAllRef.current),
@@ -85,7 +85,7 @@ export const useBuilding = (role: RoleType) => {
   }, [role, fetchAllBuildings, fetchMyBuildings]);
   return {
     // ✅ giữ cho admin cũ không hỏng
-    buildings: role === "ROLE_ADMIN" ? allBuildings : myBuildings,
+    buildings: role === "" ? allBuildings : myBuildings,
     fetchBuildings,
 
     // ✅ mới cho staff page

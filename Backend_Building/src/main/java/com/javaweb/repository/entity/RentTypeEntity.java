@@ -44,8 +44,5 @@ public class RentTypeEntity {
 	public void setName(String name) {
 		this.name = name;
 	}
-
-    // getter / setter
-    
 }
 

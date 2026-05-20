@@ -26,4 +26,5 @@ public interface UserRepository extends JpaRepository<UserEntity, Integer> {
 
     List<UserEntity> findByStatus(Integer status);
 
+    List<UserEntity> findDistinctByStatusAndRoles_CodeIn(Integer status, List<String> codes);
 }

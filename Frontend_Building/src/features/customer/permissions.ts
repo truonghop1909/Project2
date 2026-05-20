@@ -7,6 +7,8 @@ export type CustomerPermission = {
   // ✅ thêm cho staff page
   canUnassign?: boolean;
   canTake?: boolean;
+  canApprove?: boolean;
+  canReject?: boolean;
 };
 
 export type CustomerRole = "ADMIN" | "STAFF";
@@ -17,6 +19,8 @@ export const CUSTOMER_PERMISSIONS: Record<CustomerRole, CustomerPermission> = {
     canEdit: true,
     canAssign: true,
     canViewTransactions: true,
+    canApprove: true,
+    canReject: true,
   },
   STAFF: {
     canCreate: true,
@@ -24,5 +28,7 @@ export const CUSTOMER_PERMISSIONS: Record<CustomerRole, CustomerPermission> = {
     canUnassign: true,
     canAssign: false, // staff tự nhận bằng assignCurrent/unassignCurrent
     canViewTransactions: true,
+    canApprove: false,
+    canReject: false,
   },
 };

@@ -1,12 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import { CustomerSearchDTO } from "../../types/customer.type";
+import {
+  CustomerSearchDTO,
+  TransactionTypeDTO,
+} from "../../types/customer.type";
 
 export default function CustomerSearchForm({
   onSearch,
+  showApprovalStatus = false,
+  transactionTypes = [],
+  showStaffFilters = false,
 }: {
   onSearch: (params: CustomerSearchDTO) => void;
+  showApprovalStatus?: boolean;
+  transactionTypes?: TransactionTypeDTO[];
+  showStaffFilters?: boolean;
 }) {
   const [form, setForm] = useState<CustomerSearchDTO>({});
 
@@ -21,15 +30,26 @@ export default function CustomerSearchForm({
     setForm((prev) => ({
       ...prev,
       [name]:
-        type === "number"
-          ? value === "" ? undefined : Number(value)
-          : value === "" ? undefined : value,
+        type === "number" || name === "transactionTypeId" || name === "staffId"
+          ? value === ""
+            ? undefined
+            : Number(value)
+          : value === ""
+          ? undefined
+          : value,
     }));
   };
 
+  const cols =
+    showApprovalStatus && showStaffFilters
+      ? "md:grid-cols-7"
+      : showApprovalStatus || showStaffFilters
+      ? "md:grid-cols-6"
+      : "md:grid-cols-4";
+
   return (
     <div className="bg-white rounded-xl shadow-sm border p-5 space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className={`grid grid-cols-1 gap-4 ${cols}`}>
         <input
           name="fullname"
           value={form.fullname || ""}
@@ -46,14 +66,54 @@ export default function CustomerSearchForm({
           placeholder="Số điện thoại"
         />
 
-        <input
+        <select
           name="transactionTypeId"
-          type="number"
           value={form.transactionTypeId ?? ""}
           onChange={handleChange}
           className={inputStyle}
-          placeholder="TransactionTypeId"
-        />
+        >
+          <option value="">Loại giao dịch</option>
+          {transactionTypes.map((item) => (
+            <option key={item.id} value={item.id}>
+              {item.name}
+            </option>
+          ))}
+        </select>
+
+        {showApprovalStatus && (
+          <select
+            name="approvalStatus"
+            value={form.approvalStatus || ""}
+            onChange={handleChange}
+            className={inputStyle}
+          >
+            <option value="">Trạng thái</option>
+            <option value="PENDING">Chờ duyệt</option>
+            <option value="APPROVED">Đã duyệt</option>
+            <option value="REJECTED">Từ chối</option>
+          </select>
+        )}
+
+        {showStaffFilters && (
+          <>
+            <input
+              name="staffId"
+              type="number"
+              value={form.staffId ?? ""}
+              onChange={handleChange}
+              className={inputStyle}
+              placeholder="ID staff"
+            />
+
+            <input
+              name="staffName"
+              value={form.staffName || ""}
+              onChange={handleChange}
+              className={inputStyle}
+              placeholder="Tên staff quản lý"
+            />
+          </>
+        )}
 
         <button
           onClick={() => onSearch(form)}

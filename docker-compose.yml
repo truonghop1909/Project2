@@ -1,0 +1,53 @@
+services:
+  db:
+    image: mysql:5.7
+    container_name: building-mysql
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: building_database
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p123456"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./Backend_Building
+      dockerfile: Dockerfile
+    container_name: building-backend
+    ports:
+      - "8083:8083"
+    environment:
+      FILE_UPLOAD_DIR: /app/uploads/buildings
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/building_database?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 123456
+      SPRING_PROFILES_ACTIVE: uat
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./docker-uploads:/app/uploads/buildings
+
+  frontend:
+    build:
+      context: ./Frontend_Building
+      dockerfile: Dockerfile
+    container_name: building-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8083
+    volumes:
+      - ./Frontend_Building:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+
+volumes:
+  mysql_data:

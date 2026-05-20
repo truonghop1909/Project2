@@ -5,9 +5,11 @@ import java.util.Date;
 public class TransactionDTO {
     private Integer id;
     private Integer customerId;
+    private Integer staffId;
     private Integer transactiontypeId; // ✅ giữ để FE gửi lên/hiển thị
     private String transactionTypeName; // ✅ thêm để FE hiển thị
     private String customerName;
+    private String staffName;
     private String customerPhone;
     private String note;
     private Date date;
@@ -76,6 +78,22 @@ public class TransactionDTO {
         this.customerPhone = customerPhone;
     }
 
+    public Integer getStaffId() {
+        return staffId;
+    }   
+
+    public void setStaffId(Integer staffId) {
+        this.staffId = staffId;
+    }
+
+    public String getStaffName() {
+        return staffName;
+    }
+
+    public void setStaffName(String staffName) {
+        this.staffName = staffName;
+    }
+
     public TransactionDTO(
             Integer id,
             Integer customerId,
@@ -84,7 +102,9 @@ public class TransactionDTO {
             String customerName,
             String customerPhone,
             String note,
-            Date date) {
+            Date date,
+            Integer staffId,
+            String staffName) {
         this.id = id;
         this.customerId = customerId;
         this.transactiontypeId = transactiontypeId;
@@ -93,6 +113,8 @@ public class TransactionDTO {
         this.customerPhone = customerPhone;
         this.note = note;
         this.date = date;
+        this.staffId = staffId;
+        this.staffName = staffName;
     }
 
     public TransactionDTO() {

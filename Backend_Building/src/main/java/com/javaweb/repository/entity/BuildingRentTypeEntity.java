@@ -1,37 +1,50 @@
 package com.javaweb.repository.entity;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.IdClass;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
 @Table(name = "buildingrenttype")
-@IdClass(BuildingRentTypeId.class)
 public class BuildingRentTypeEntity {
 
     @Id
-    @Column(name = "building_id")
-    private Integer buildingId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id; // 🔥 PK mới
 
-    @Id
-    @Column(name = "renttype_id")
-    private Integer rentTypeId;
+    @ManyToOne
+    @JoinColumn(name = "building_id")
+    private BuildingEntity building;
 
-    public Integer getBuildingId() {
-        return buildingId;
+    @ManyToOne
+    @JoinColumn(name = "renttype_id")
+    private RentTypeEntity rentType;
+
+    public Integer getId() { 
+        return id;
     }
 
-    public void setBuildingId(Integer buildingId) {
-        this.buildingId = buildingId;
+    public void setId(Integer id) {
+        this.id = id;
     }
 
-    public Integer getRentTypeId() {
-        return rentTypeId;
+    public BuildingEntity getBuilding() {
+        return building;
     }
 
-    public void setRentTypeId(Integer rentTypeId) {
-        this.rentTypeId = rentTypeId;
+    public void setBuilding(BuildingEntity building) {
+        this.building = building;
+    }
+
+    public RentTypeEntity getRentType() {
+        return rentType;
+    }
+
+    public void setRentType(RentTypeEntity rentType) {
+        this.rentType = rentType;
     }
 }

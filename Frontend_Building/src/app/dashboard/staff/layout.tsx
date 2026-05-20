@@ -9,9 +9,9 @@ export default function StaffLayout({
   children: React.ReactNode;
 }) {
   return (
-    <AuthGuard requiredRole="ROLE_STAFF">
+    <AuthGuard requiredRole="STAFF">
       <div className="flex min-h-screen w-full">
-        <Sidebar roles={["ROLE_STAFF"]} />
+        <Sidebar roles={["STAFF"]} />
 
         <main className="flex-1 bg-gray-50">
           <div className="w-full p-6">

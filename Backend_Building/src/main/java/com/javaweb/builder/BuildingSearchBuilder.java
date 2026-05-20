@@ -1,231 +1,442 @@
 package com.javaweb.builder;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class BuildingSearchBuilder {
-
+    
+    // ========== THÔNG TIN CƠ BẢN ==========
     private String name;
-    // Address info
-    private String district;
-    private String ward;
     private String street;
     private Integer numberOfBasement;
-    private Double floorAreaFrom;
-    private Double floorAreaTo;
+    
+    // ========== ĐỊA CHỈ MỚI (SAU 07/2025) ==========
+    private String provinceId;
+    private String provinceName;
+    private String wardCode;
+    private String wardName;
+    
+    // ========== THÔNG TIN TÒA NHÀ ==========
     private String direction;
     private String level;
-    private List<String> rentTypes;
-    // Fees & prices
+    
+    // ========== DIỆN TÍCH ==========
+    private Double floorAreaFrom;
+    private Double floorAreaTo;
+    
+    // ========== DIỆN TÍCH CHO THUÊ ==========
+    private Double rentAreaFrom;
+    private Double rentAreaTo;
+    
+    // ========== GIÁ THUÊ ==========
     private Double rentPriceFrom;
     private Double rentPriceTo;
-    private Integer rentAreaFrom;
-    private Integer rentAreaTo;
+    
+    // ========== NHÂN VIÊN QUẢN LÝ ==========
     private Integer staffId;
+    
+    // ========== LOẠI HÌNH THUÊ ==========
+    private List<String> rentTypes;
+    
+    // ========== PAGINATION & SORT ==========
     private Integer page;
     private Integer size;
     private String sortBy;
     private String sortDirection;
-    /* ================== CONSTRUCTOR ================== */
+    
+    // ========== CONSTRUCTORS ==========
+    
+    public BuildingSearchBuilder() {
+    }
+    
     private BuildingSearchBuilder(Builder builder) {
+        // Thông tin cơ bản
         this.name = builder.name;
-        this.district = builder.district;
-        this.ward = builder.ward;
         this.street = builder.street;
         this.numberOfBasement = builder.numberOfBasement;
-        this.floorAreaFrom = builder.floorAreaFrom;
-        this.floorAreaTo = builder.floorAreaTo;
+        
+        // Địa chỉ mới
+        this.provinceId = builder.provinceId;
+        this.provinceName = builder.provinceName;
+        this.wardCode = builder.wardCode;
+        this.wardName = builder.wardName;
+        
+        // Thông tin tòa nhà
         this.direction = builder.direction;
         this.level = builder.level;
-        this.rentTypes = builder.rentTypes;
-        this.rentPriceFrom = builder.rentPriceFrom;
-        this.rentPriceTo = builder.rentPriceTo;
+        
+        // Diện tích
+        this.floorAreaFrom = builder.floorAreaFrom;
+        this.floorAreaTo = builder.floorAreaTo;
+        
+        // Diện tích cho thuê
         this.rentAreaFrom = builder.rentAreaFrom;
         this.rentAreaTo = builder.rentAreaTo;
+        
+        // Giá thuê
+        this.rentPriceFrom = builder.rentPriceFrom;
+        this.rentPriceTo = builder.rentPriceTo;
+        
+        // Nhân viên quản lý
         this.staffId = builder.staffId;
+        
+        // Loại hình thuê
+        this.rentTypes = builder.rentTypes;
+        
+        // Pagination & Sort
         this.page = builder.page;
         this.size = builder.size;
         this.sortBy = builder.sortBy;
         this.sortDirection = builder.sortDirection;
     }
-
-    /* ================== GETTERS ================== */
+    
+    // ========== HELPER METHODS ==========
+    
+    /**
+     * Kiểm tra xem có dùng địa chỉ mới để tìm kiếm không
+     */
+    public boolean isUsingNewAddress() {
+        return (provinceId != null && !provinceId.isEmpty()) 
+            || (wardCode != null && !wardCode.isEmpty())
+            || (provinceName != null && !provinceName.isEmpty())
+            || (wardName != null && !wardName.isEmpty());
+    }
+    
+    
+    /**
+     * Lấy giá trị offset cho pagination
+     */
+    public Integer getOffset() {
+        if (page == null || size == null || page < 1 || size < 1) {
+            return null;
+        }
+        return (page - 1) * size;
+    }
+    
+    /**
+     * Kiểm tra có pagination không
+     */
+    public boolean hasPagination() {
+        return page != null && size != null && size > 0;
+    }
+    
+    // ========== GETTERS & SETTERS ==========
+    
     public String getName() {
         return name;
     }
-
-    public String getWard() {
-        return ward;
-    }
     
-    public String getDistrict() {
-        return district;
+    public void setName(String name) {
+        this.name = name;
     }
     
     public String getStreet() {
         return street;
     }
-
+    
+    public void setStreet(String street) {
+        this.street = street;
+    }
+    
     public Integer getNumberOfBasement() {
         return numberOfBasement;
     }
-
+    
+    public void setNumberOfBasement(Integer numberOfBasement) {
+        this.numberOfBasement = numberOfBasement;
+    }
+    
     public Double getFloorAreaFrom() {
         return floorAreaFrom;
     }
-
+    
+    public void setFloorAreaFrom(Double floorAreaFrom) {
+        this.floorAreaFrom = floorAreaFrom;
+    }
+    
     public Double getFloorAreaTo() {
         return floorAreaTo;
     }
-
-    public String getDirection() {
-        return direction;
+    
+    public void setFloorAreaTo(Double floorAreaTo) {
+        this.floorAreaTo = floorAreaTo;
     }
-
-    public String getLevel() {
-        return level;
+    
+    public Double getRentAreaFrom() {
+        return rentAreaFrom;
     }
-
-    public List<String> getRentTypes() {
-        return rentTypes;
+    
+    public void setRentAreaFrom(Double rentAreaFrom) {
+        this.rentAreaFrom = rentAreaFrom;
     }
-
+    
+    public Double getRentAreaTo() {
+        return rentAreaTo;
+    }
+    
+    public void setRentAreaTo(Double rentAreaTo) {
+        this.rentAreaTo = rentAreaTo;
+    }
+    
     public Double getRentPriceFrom() {
         return rentPriceFrom;
     }
-
+    
+    public void setRentPriceFrom(Double rentPriceFrom) {
+        this.rentPriceFrom = rentPriceFrom;
+    }
+    
     public Double getRentPriceTo() {
         return rentPriceTo;
     }
-
-    public Integer getRentAreaFrom() {
-        return rentAreaFrom;
+    
+    public void setRentPriceTo(Double rentPriceTo) {
+        this.rentPriceTo = rentPriceTo;
     }
-
-    public Integer getRentAreaTo() {
-        return rentAreaTo;
-    }
-
+    
     public Integer getStaffId() {
         return staffId;
     }
-
-    /* ================== BUILDER ================== */
+    
+    public void setStaffId(Integer staffId) {
+        this.staffId = staffId;
+    }
+    
+    public List<String> getRentTypes() {
+        return rentTypes;
+    }
+    
+    public void setRentTypes(List<String> rentTypes) {
+        this.rentTypes = rentTypes;
+    }
+    
+    public String getDirection() {
+        return direction;
+    }
+    
+    public void setDirection(String direction) {
+        this.direction = direction;
+    }
+    
+    public String getLevel() {
+        return level;
+    }
+    
+    public void setLevel(String level) {
+        this.level = level;
+    }
+    
+    public String getProvinceId() {
+        return provinceId;
+    }
+    
+    public void setProvinceId(String provinceId) {
+        this.provinceId = provinceId;
+    }
+    
+    public String getProvinceName() {
+        return provinceName;
+    }
+    
+    public void setProvinceName(String provinceName) {
+        this.provinceName = provinceName;
+    }
+    
+    public String getWardCode() {
+        return wardCode;
+    }
+    
+    public void setWardCode(String wardCode) {
+        this.wardCode = wardCode;
+    }
+    
+    public String getWardName() {
+        return wardName;
+    }
+    
+    public void setWardName(String wardName) {
+        this.wardName = wardName;
+    }
+    
+    public Integer getPage() {
+        return page;
+    }
+    
+    public void setPage(Integer page) {
+        this.page = page;
+    }
+    
+    public Integer getSize() {
+        return size;
+    }
+    
+    public void setSize(Integer size) {
+        this.size = size;
+    }
+    
+    public String getSortBy() {
+        return sortBy;
+    }
+    
+    public void setSortBy(String sortBy) {
+        this.sortBy = sortBy;
+    }
+    
+    public String getSortDirection() {
+        return sortDirection;
+    }
+    
+    public void setSortDirection(String sortDirection) {
+        this.sortDirection = sortDirection;
+    }
+    
+    // ========== BUILDER PATTERN ==========
+    
+    public static Builder builder() {
+        return new Builder();
+    }
+    
     public static class Builder {
-
+        // Thông tin cơ bản
         private String name;
-        // Address info
-        private String district;
-        private String ward;
         private String street;
         private Integer numberOfBasement;
-        private Double floorAreaFrom;
-        private Double floorAreaTo;
+        
+        // Địa chỉ mới
+        private String provinceId;
+        private String provinceName;
+        private String wardCode;
+        private String wardName;
+        
+        // Thông tin tòa nhà
         private String direction;
         private String level;
-        private List<String> rentTypes = new ArrayList<>();
-        // Fees & prices
+        
+        // Diện tích
+        private Double floorAreaFrom;
+        private Double floorAreaTo;
+        
+        // Diện tích cho thuê
+        private Double rentAreaFrom;
+        private Double rentAreaTo;
+        
+        // Giá thuê
         private Double rentPriceFrom;
         private Double rentPriceTo;
-        private Integer rentAreaFrom;
-        private Integer rentAreaTo;
+        
+        // Nhân viên quản lý
         private Integer staffId;
+        
+        // Loại hình thuê
+        private List<String> rentTypes;
+        
+        // Pagination & Sort
         private Integer page;
         private Integer size;
         private String sortBy;
         private String sortDirection;
-
-        public Builder setName(String name) {
+        
+        public Builder name(String name) {
             this.name = name;
             return this;
         }
-
-        public Builder setWard(String ward) {
-            this.ward = ward;
-            return this;
-        }
         
-        public Builder setDistrict(String district) {
-            this.district = district;
-            return this;
-        }
-        
-        public Builder setStreet(String street) {
+        public Builder street(String street) {
             this.street = street;
             return this;
         }
-
-        public Builder setNumberOfBasement(Integer numberOfBasement) {
+        
+        public Builder numberOfBasement(Integer numberOfBasement) {
             this.numberOfBasement = numberOfBasement;
             return this;
         }
-
-        public Builder setFloorAreaFrom(Double floorAreaFrom) {
-            this.floorAreaFrom = floorAreaFrom;
+        
+        
+        public Builder provinceId(String provinceId) {
+            this.provinceId = provinceId;
             return this;
         }
-
-        public Builder setFloorAreaTo(Double floorAreaTo) {
-            this.floorAreaTo = floorAreaTo;
+        
+        public Builder provinceName(String provinceName) {
+            this.provinceName = provinceName;
             return this;
         }
-
-        public Builder setDirection(String direction) {
+        
+        public Builder wardCode(String wardCode) {
+            this.wardCode = wardCode;
+            return this;
+        }
+        
+        public Builder wardName(String wardName) {
+            this.wardName = wardName;
+            return this;
+        }
+        
+        public Builder direction(String direction) {
             this.direction = direction;
             return this;
         }
-
-        public Builder setLevel(String level) {
+        
+        public Builder level(String level) {
             this.level = level;
             return this;
         }
-
-        public Builder setRentTypes(List<String> rentTypes) {
-            this.rentTypes = rentTypes;
+        
+        public Builder floorAreaFrom(Double floorAreaFrom) {
+            this.floorAreaFrom = floorAreaFrom;
             return this;
         }
-
-        public Builder setRentPriceFrom(Double rentPriceFrom) {
-            this.rentPriceFrom = rentPriceFrom;
+        
+        public Builder floorAreaTo(Double floorAreaTo) {
+            this.floorAreaTo = floorAreaTo;
             return this;
         }
-
-        public Builder setRentPriceTo(Double rentPriceTo) {
-            this.rentPriceTo = rentPriceTo;
-            return this;
-        }
-
-        public Builder setRentAreaFrom(Integer rentAreaFrom) {
+        
+        public Builder rentAreaFrom(Double rentAreaFrom) {
             this.rentAreaFrom = rentAreaFrom;
             return this;
         }
-
-        public Builder setRentAreaTo(Integer rentAreaTo) {
+        
+        public Builder rentAreaTo(Double rentAreaTo) {
             this.rentAreaTo = rentAreaTo;
             return this;
         }
-
-        public Builder setStaffId(Integer staffId) {
+        
+        public Builder rentPriceFrom(Double rentPriceFrom) {
+            this.rentPriceFrom = rentPriceFrom;
+            return this;
+        }
+        
+        public Builder rentPriceTo(Double rentPriceTo) {
+            this.rentPriceTo = rentPriceTo;
+            return this;
+        }
+        
+        public Builder staffId(Integer staffId) {
             this.staffId = staffId;
             return this;
         }
         
-        public Builder setPage(Integer page) {
+        public Builder rentTypes(List<String> rentTypes) {
+            this.rentTypes = rentTypes;
+            return this;
+        }
+        
+        public Builder page(Integer page) {
             this.page = page;
             return this;
         }
-
-        public Builder setSize(Integer size) {
+        
+        public Builder size(Integer size) {
             this.size = size;
             return this;
         }
-
-        public Builder setSortBy(String sortBy) {
+        
+        public Builder sortBy(String sortBy) {
             this.sortBy = sortBy;
             return this;
         }
-
-        public Builder setSortDirection(String sortDirection) {
+        
+        public Builder sortDirection(String sortDirection) {
             this.sortDirection = sortDirection;
             return this;
         }
@@ -234,20 +445,33 @@ public class BuildingSearchBuilder {
             return new BuildingSearchBuilder(this);
         }
     }
-    public Integer getPage() {
-        return page;
+    
+    // ========== TO STRING ==========
+    
+    @Override
+    public String toString() {
+        return "BuildingSearchBuilder{" +
+                "name='" + name + '\'' +
+                ", street='" + street + '\'' +
+                ", numberOfBasement=" + numberOfBasement +
+                ", provinceId='" + provinceId + '\'' +
+                ", provinceName='" + provinceName + '\'' +
+                ", wardCode='" + wardCode + '\'' +
+                ", wardName='" + wardName + '\'' +
+                ", direction='" + direction + '\'' +
+                ", level='" + level + '\'' +
+                ", floorAreaFrom=" + floorAreaFrom +
+                ", floorAreaTo=" + floorAreaTo +
+                ", rentAreaFrom=" + rentAreaFrom +
+                ", rentAreaTo=" + rentAreaTo +
+                ", rentPriceFrom=" + rentPriceFrom +
+                ", rentPriceTo=" + rentPriceTo +
+                ", staffId=" + staffId +
+                ", rentTypes=" + rentTypes +
+                ", page=" + page +
+                ", size=" + size +
+                ", sortBy='" + sortBy + '\'' +
+                ", sortDirection='" + sortDirection + '\'' +
+                '}';
     }
-
-    public Integer getSize() {
-        return size;
-    }
-
-    public String getSortBy() {
-        return sortBy;
-    }
-
-    public String getSortDirection() {
-        return sortDirection;
-    }
-
 }

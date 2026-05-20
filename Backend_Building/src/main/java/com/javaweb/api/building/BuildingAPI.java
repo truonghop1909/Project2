@@ -1,17 +1,12 @@
 package com.javaweb.api.building;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.PropertySource;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -21,34 +16,56 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
-import com.javaweb.builder.BuildingSearchBuilder;
-import com.javaweb.model.BuildingDTO;
-import com.javaweb.model.BuildingRequestDTO;
+import com.javaweb.model.BuildingDetailDTO;
 import com.javaweb.model.BuildingSearchDTO;
-import com.javaweb.model.BuildingUpdateDTO;
 import com.javaweb.model.UserDTO;
-import com.javaweb.repository.BuildingRepository;
-import com.javaweb.repository.entity.BuildingEntity;
 import com.javaweb.repository.entity.UserEntity;
 import com.javaweb.service.BuildingService;
 import com.javaweb.repository.UserRepository;
-import customexceptions.FieldRequiredException;
+import com.javaweb.model.BuildingImageDTO;
 
 @RestController
-@RequestMapping("/api/building")
+@RequestMapping("/api")
 public class BuildingAPI {
     @Autowired
     private BuildingService buildingService;
     @Autowired
     private UserRepository userRepository;
 
-    // ===== SEARCH LIST =====
-    @GetMapping
+    // ==================== PUBLIC API (Không cần authentication) ====================
+    
+    /**
+     * API công khai - Lấy danh sách tòa nhà cho trang chủ (không cần đăng nhập)
+     */
+    @GetMapping("/public/buildings")
+    public List<BuildingSearchDTO> getPublicBuildings(
+            @RequestParam Map<String, Object> params,
+            @RequestParam(name = "typeCode", required = false) List<String> typeCode,
+            @RequestParam(name = "page", defaultValue = "1") Integer page,
+            @RequestParam(name = "size", defaultValue = "12") Integer size) {
+        
+        params.put("page", page);
+        params.put("size", size);
+        return buildingService.findAll(params, typeCode);
+    }
+    
+    /**
+     * API công khai - Lấy chi tiết tòa nhà cho khách hàng (không cần đăng nhập)
+     */
+    @GetMapping("/public/buildings/{id}")
+    public BuildingDetailDTO getPublicBuildingById(@PathVariable Integer id) {
+        return buildingService.findById(id);
+    }
+
+    // ==================== AUTHENTICATED API (Cần đăng nhập) ====================
+    
+    // ===== SEARCH LIST (cho admin/staff) =====
+    @GetMapping("/building")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public List<BuildingSearchDTO> getBuilding(
             @RequestParam Map<String, Object> params,
             @RequestParam(name = "typeCode", required = false) List<String> typeCode) {
@@ -56,34 +73,40 @@ public class BuildingAPI {
         return buildingService.findAll(params, typeCode);
     }
 
-    // ===== DETAIL =====
-    @GetMapping("/{id}")
-    public BuildingUpdateDTO getBuildingById(@PathVariable Integer id) {
+    // ===== DETAIL (cho admin/staff) =====
+    @GetMapping("/building/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    public BuildingDetailDTO getBuildingById(@PathVariable Integer id) {
         return buildingService.findById(id);
     }
 
     // ===== CREATE =====
-    @PostMapping
-    public void createBuilding(@RequestBody BuildingUpdateDTO dto) {
-        buildingService.createBuilding(dto);
+    @PostMapping("/building")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> createBuilding(@RequestBody BuildingDetailDTO dto) {
+        Integer buildingId = buildingService.createBuilding(dto);
+        return ResponseEntity.ok(Collections.singletonMap("id", buildingId));
     }
 
     // ===== UPDATE =====
-    @PutMapping("/{id}")
+    @PutMapping("/building/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public void updateBuilding(
             @PathVariable Integer id,
-            @RequestBody BuildingUpdateDTO dto) {
+            @RequestBody BuildingDetailDTO dto) {
 
         buildingService.updateBuilding(id, dto);
     }
 
     // ===== DELETE =====
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/building/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public void deleteBuilding(@PathVariable Integer id) {
         buildingService.deleteBuilding(id);
     }
 
-    @GetMapping("/my-building")
+    @GetMapping("/building/my-building")
+    @PreAuthorize("hasRole('STAFF')")
     public List<BuildingSearchDTO> getMyBuildings(
             @RequestParam Map<String, Object> params,
             @RequestParam(name = "typeCode", required = false) List<String> typeCode) {
@@ -94,17 +117,70 @@ public class BuildingAPI {
         Integer userId = Integer.parseInt(userIdStr);
 
         UserEntity user = userRepository.findById(userId)
-        .orElseThrow(() -> new RuntimeException("User not found with id = " + userId));
-
+                .orElseThrow(() -> new RuntimeException("User not found with id = " + userId));
 
         params.put("staffId", user.getId());
 
         return buildingService.findAll(params, typeCode);
     }
 
-    @GetMapping("/{id}/staff")
+    @GetMapping("/building/{id}/staff")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public List<UserDTO> getAssignedStaff(@PathVariable Integer id) {
         return buildingService.getAssignedStaff(id);
     }
 
+    // ==================== IMAGE API (Cần đăng nhập) ====================
+    
+    // ===== UPLOAD IMAGE =====
+    @PostMapping("/building/{id}/image")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> uploadBuildingImage(@PathVariable Integer id,
+            @RequestParam("file") MultipartFile file) {
+        buildingService.uploadBuildingImage(id, file);
+        return ResponseEntity.ok("Upload ảnh thành công");
+    }
+
+    // ===== UPLOAD SUB IMAGE =====
+    @PostMapping("/building/{id}/images")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> uploadSubImage(@PathVariable Integer id,
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("title") String title,
+            @RequestParam("description") String description) {
+        buildingService.uploadSubImage(id, file, title, description);
+        return ResponseEntity.ok("Upload ảnh phụ thành công");
+    }
+
+    // ===== GET SUB IMAGES =====
+    @GetMapping("/building/{id}/images")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    public List<BuildingImageDTO> getSubImages(@PathVariable Integer id) {
+        return buildingService.getSubImages(id);
+    }
+
+    // ===== UPDATE SUB IMAGE INFO =====
+    @PutMapping("/building/images/{imageId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> updateSubImage(@PathVariable Integer imageId,
+            @RequestBody BuildingImageDTO dto) {
+        buildingService.updateSubImage(imageId, dto);
+        return ResponseEntity.ok("Cập nhật ảnh phụ thành công");
+    }
+
+    // ===== UPDATE IMAGE ORDER =====
+    @PutMapping("/building/images/{imageId}/order")
+    @PreAuthorize("hasRole('ADMIN')")
+    public void updateOrder(@PathVariable Integer imageId,
+            @RequestParam Integer order) {
+        buildingService.updateImageOrder(imageId, order);
+    }
+
+    // ===== DELETE SUB IMAGE =====
+    @DeleteMapping("/building/images/{imageId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> deleteSubImage(@PathVariable Integer imageId) {
+        buildingService.deleteSubImage(imageId);
+        return ResponseEntity.ok("Xóa ảnh phụ thành công");
+    }
 }

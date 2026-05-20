@@ -40,8 +40,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 Integer userId = jwtTokenProvider.getUserIdFromJWT(token);
                 List<String> roles = jwtTokenProvider.getRolesFromJWT(token);
 
-                // 🔥 ROLE → GrantedAuthority
+                // ROLE -> GrantedAuthority theo chuẩn Spring Security
+                // ADMIN -> 
+                // STAFF -> ROLE_STAFF
                 List<SimpleGrantedAuthority> authorities = roles.stream()
+                        .map(role -> role.startsWith("ROLE_") ? role : "ROLE_" + role)
                         .map(SimpleGrantedAuthority::new)
                         .collect(Collectors.toList());
 

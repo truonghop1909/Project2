@@ -1,6 +1,6 @@
 "use client";
 
-import BuildingSearchForm from "@/features/building/components/form/BuildingForm";
+import BuildingSearchForm from "@/features/building/components/form/BuildingSearchForm";
 
 export default function BuildingFilter({
   onSearch,

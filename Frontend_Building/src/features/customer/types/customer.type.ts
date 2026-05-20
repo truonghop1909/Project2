@@ -5,6 +5,16 @@ export interface CustomerDTO {
   email: string;
   demand: string;
   note: string;
+
+  approvalStatus?: string;
+
+  createdAt?: string;
+  createdBy?: number;
+  createdByName?: string;
+
+  approvedAt?: string;
+  approvedBy?: number;
+  approvedByName?: string;
 }
 
 export interface CustomerRequestDTO {
@@ -19,6 +29,10 @@ export interface CustomerSearchDTO {
   fullname?: string;
   phone?: string;
   transactionTypeId?: number;
+
+  approvalStatus?: string;
+  staffId?: number;
+  staffName?: string;
 }
 
 export interface AssignmentCustomerDTO {
@@ -26,7 +40,6 @@ export interface AssignmentCustomerDTO {
   staffIds: number[];
 }
 
-// ⚠️ chỉnh field nếu backend trả khác
 export interface StaffAssignmentDTO {
   staffId: number;
   fullname: string;
@@ -38,16 +51,16 @@ export interface TransactionDTO {
   customerId?: number;
 
   transactiontypeId?: number;
-  transactionTypeName?: string; // ✅ tên loại giao dịch
+  transactionTypeName?: string;
 
-  customerName?: string;        // ✅ tên khách
-  customerPhone?: string;       // ✅ sđt khách
+  customerName?: string;
+  customerPhone?: string;
 
   note?: string;
-  date?: string; // server trả Date -> FE nhận string
+  date?: string;
 }
 
 export interface TransactionTypeDTO {
-  id: number
-  name: string
+  id: number;
+  name: string;
 }

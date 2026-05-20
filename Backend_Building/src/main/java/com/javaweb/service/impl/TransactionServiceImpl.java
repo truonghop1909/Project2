@@ -10,8 +10,10 @@ import org.springframework.stereotype.Service;
 import com.javaweb.model.TransactionDTO;
 import com.javaweb.repository.TransactionRepository;
 import com.javaweb.repository.TransactionTypeRepository;
+import com.javaweb.repository.entity.CustomerEntity;
 import com.javaweb.repository.entity.TransactionEntity;
 import com.javaweb.repository.entity.TransactionTypeEntity;
+import com.javaweb.repository.entity.UserEntity;
 import com.javaweb.service.AssignmentCustomerService;
 import com.javaweb.service.TransactionService;
 import com.javaweb.utils.SecurityUtils;
@@ -45,10 +47,17 @@ public class TransactionServiceImpl implements TransactionService {
                 .findById(dto.getTransactiontypeId())
                 .orElseThrow(() -> new RuntimeException("Transaction type not found"));
 
+        // 🔥 LẤY OBJECT THAY VÌ ID
+        CustomerEntity customer = new CustomerEntity();
+        customer.setId(customerId);
+
+        UserEntity staff = new UserEntity();
+        staff.setId(staffId);
+
         TransactionEntity e = new TransactionEntity();
-        e.setCustomerId(customerId);
-        e.setStaffId(staffId);
-        e.setTransactionType(type); // ✅ set relation
+        e.setCustomer(customer); // ✅ đúng
+        e.setStaff(staff); // ✅ đúng
+        e.setTransactionType(type);
         e.setNote(dto.getNote());
         e.setDate(dto.getDate() != null ? dto.getDate() : new Date());
 

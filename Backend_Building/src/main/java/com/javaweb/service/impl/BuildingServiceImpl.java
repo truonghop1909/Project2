@@ -1,5 +1,6 @@
 package com.javaweb.service.impl;
 
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -8,29 +9,33 @@ import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.javaweb.builder.BuildingSearchBuilder;
 import com.javaweb.converter.BuildingDTOConverter;
+import com.javaweb.converter.BuildingDetailDTOConverter;
+import com.javaweb.converter.BuildingEntityConverter;
 import com.javaweb.converter.BuildingSearchBuilderConverter;
-import com.javaweb.converter.BuildingUpdateDTOConverter;
-import com.javaweb.model.BuildingDTO;
-import com.javaweb.model.BuildingRequestDTO;
+import com.javaweb.model.BuildingDetailDTO;
+import com.javaweb.model.BuildingImageDTO;
 import com.javaweb.model.BuildingSearchDTO;
-import com.javaweb.model.BuildingUpdateDTO;
 import com.javaweb.model.UserDTO;
-import com.javaweb.repository.AssignmentBuildingRepository;
+import com.javaweb.repository.BuildingImageRepository;
 import com.javaweb.repository.BuildingRentTypeRepository;
 import com.javaweb.repository.BuildingRepository;
-import com.javaweb.repository.DistrictRepository;
 import com.javaweb.repository.RentAreaRepository;
 import com.javaweb.repository.RentTypeRepository;
 import com.javaweb.repository.entity.BuildingEntity;
+import com.javaweb.repository.entity.BuildingImageEntity;
 import com.javaweb.repository.entity.BuildingRentTypeEntity;
-import com.javaweb.repository.entity.DistrictEntity;
 import com.javaweb.repository.entity.RentAreaEntity;
+import com.javaweb.repository.entity.RentTypeEntity;
 import com.javaweb.repository.entity.UserEntity;
 import com.javaweb.service.BuildingService;
+import com.javaweb.service.FileStorageService;
 
 import customexceptions.BuildingAssignedException;
 
@@ -41,15 +46,11 @@ public class BuildingServiceImpl implements BuildingService {
     private BuildingRepository buildingRepository;
 
     @Autowired
-    private BuildingDTOConverter buildingDTOConverter;
-
-    @Autowired
     private BuildingSearchBuilderConverter buildingSearchBuilderConverter;
-    @Autowired
-    private AssignmentBuildingRepository assignmentBuildingRepository;
 
     @Autowired
     private RentAreaRepository rentAreaRepository;
+
     @Autowired
     private BuildingRentTypeRepository buildingRentTypeRepository;
 
@@ -57,163 +58,93 @@ public class BuildingServiceImpl implements BuildingService {
     private RentTypeRepository rentTypeRepository;
 
     @Autowired
-    private DistrictRepository districtRepository;
+    private FileStorageService fileStorageService;
+
     @Autowired
-    private BuildingUpdateDTOConverter buildingUpdateDTOConverter;
+    private BuildingImageRepository buildingImageRepository;
 
-    // ================= SEARCH (JDBC) =================
+    @Autowired
+    private BuildingDetailDTOConverter buildingDetailDTOConverter;
+
+    @Autowired
+    private BuildingEntityConverter buildingEntityConverter;
+
+    // ================= EXISTING METHODS =================
+    
     @Override
-    public List<BuildingSearchDTO> findAll(Map<String, Object> params, List<String> typeCode) {
+    @Transactional
+    public Integer createBuilding(BuildingDetailDTO dto) {
+        // ... existing code ...
+        if (dto.getName() == null || dto.getName().trim().isEmpty()) {
+            throw new RuntimeException("Tên tòa nhà không được để trống");
+        }
 
-        BuildingSearchBuilder builder = buildingSearchBuilderConverter.toBuildingSearchBuilder(params, typeCode);
+        BuildingEntity entity = buildingEntityConverter.toEntity(dto);
+        buildingRepository.save(entity);
 
-        return buildingRepository.findAll(builder);
+        saveRentAreas(entity, dto.getRentAreas());
+        saveRentTypes(entity.getId(), dto.getRentTypeCodes());
+        return entity.getId();
     }
 
-    // ================= FIND BY ID (JPA) =================
     @Override
-    public BuildingUpdateDTO findById(Integer id) {
-
+    @Transactional
+    public void updateBuilding(Integer id, BuildingDetailDTO dto) {
+        // ... existing code ...
         BuildingEntity entity = buildingRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Building not found"));
 
-        return buildingUpdateDTOConverter.toUpdateDTO(entity);
-    }
-
-    // ================= CREATE (JPA) =================
-    @Override
-    @Transactional
-    public void createBuilding(BuildingUpdateDTO dto) {
-
-        // 1️⃣ Convert DTO → Entity
-        BuildingEntity entity = buildingUpdateDTOConverter.toEntity(dto);
-        // 2️⃣ Set district relation (nếu dùng @ManyToOne)
-        if (dto.getDistrictId() != null) {
-            DistrictEntity district = districtRepository
-                    .findById(dto.getDistrictId())
-                    .orElseThrow(() -> new RuntimeException("District not found"));
-            entity.setDistrict(district);
-        }
-
-        // 3️⃣ Save building (lấy ID)
+        buildingEntityConverter.toEntity(dto, entity);
         buildingRepository.save(entity);
 
-        // 4️⃣ Save rent areas
-        if (dto.getRentAreas() != null && !dto.getRentAreas().isEmpty()) {
-            for (Integer value : dto.getRentAreas()) {
+        rentAreaRepository.deleteByBuildingId(id);
+        saveRentAreas(entity, dto.getRentAreas());
+
+        buildingRentTypeRepository.deleteByBuildingId(id);
+        saveRentTypes(id, dto.getRentTypeCodes());
+    }
+
+    private void saveRentAreas(BuildingEntity entity, List<Integer> rentAreas) {
+        if (rentAreas != null && !rentAreas.isEmpty()) {
+            for (Integer value : rentAreas) {
                 RentAreaEntity rentArea = new RentAreaEntity();
                 rentArea.setValue(value);
                 rentArea.setBuilding(entity);
                 rentAreaRepository.save(rentArea);
             }
         }
+    }
 
-        // 5️⃣ Save rent types
-        if (dto.getRentTypeCodes() != null && !dto.getRentTypeCodes().isEmpty()) {
-            for (String code : dto.getRentTypeCodes()) {
-                Integer rentTypeId = rentTypeRepository.findIdByCode(code);
+    private void saveRentTypes(Integer buildingId, List<String> rentTypeCodes) {
+        if (rentTypeCodes != null && !rentTypeCodes.isEmpty()) {
+            BuildingEntity building = buildingRepository.findById(buildingId)
+                    .orElseThrow(() -> new RuntimeException("Building not found"));
+
+            for (String code : rentTypeCodes) {
+                RentTypeEntity rentType = rentTypeRepository.findByCode(code)
+                        .orElseThrow(() -> new RuntimeException("Không tìm thấy rent type: " + code));
 
                 BuildingRentTypeEntity brt = new BuildingRentTypeEntity();
-                brt.setBuildingId(entity.getId());
-                brt.setRentTypeId(rentTypeId);
-
+                brt.setBuilding(building);
+                brt.setRentType(rentType);
                 buildingRentTypeRepository.save(brt);
             }
         }
     }
 
-    // ================= UPDATE (JPA) =================
-    @Override
-    @Transactional
-    public void updateBuilding(Integer id, BuildingUpdateDTO dto) {
-
-        BuildingEntity oldEntity = buildingRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Building not found"));
-
-        // 1️⃣ Convert DTO → Entity mới
-        BuildingEntity newEntity = buildingUpdateDTOConverter.toEntity(dto);
-
-        // 2️⃣ Giữ nguyên ID
-        newEntity.setId(oldEntity.getId());
-
-        // 3️⃣ Giữ relation (nếu cần)
-        if (dto.getDistrictId() != null) {
-            DistrictEntity district = districtRepository
-                    .findById(dto.getDistrictId())
-                    .orElseThrow(() -> new RuntimeException("District not found"));
-            newEntity.setDistrict(district);
-        }
-
-        // 4️⃣ SAVE = UPDATE
-        buildingRepository.save(newEntity);
-    }
-
-    // ================= DELETE (JPA) =================
     @Override
     @Transactional
     public void deleteBuilding(Integer id) {
-
         BuildingEntity building = buildingRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Building không tồn tại"));
 
         if (!building.getUsers().isEmpty()) {
-            throw new BuildingAssignedException(
-                    "Không thể xóa tòa nhà vì đang được giao cho nhân viên");
+            throw new BuildingAssignedException("Không thể xóa tòa nhà vì đang được giao cho nhân viên");
         }
 
         rentAreaRepository.deleteByBuildingId(id);
         buildingRentTypeRepository.deleteByBuildingId(id);
-
         buildingRepository.delete(building);
-    }
-
-    // ================= MAPPER =================
-    private void mapDtoToEntity(BuildingUpdateDTO dto, BuildingEntity entity) {
-
-        if (dto.getName() != null) {
-            entity.setName(dto.getName());
-        }
-
-        if (dto.getStreet() != null) {
-            entity.setStreet(dto.getStreet());
-        }
-
-        if (dto.getWard() != null) {
-            entity.setWard(dto.getWard());
-        }
-
-        if (dto.getNumberOfBasement() != null) {
-            entity.setNumberOfBasement(dto.getNumberOfBasement());
-        }
-
-        if (dto.getFloorArea() != null) {
-            entity.setFloorArea(dto.getFloorArea());
-        }
-
-        if (dto.getRentPrice() != null) {
-            entity.setRentPrice(dto.getRentPrice());
-        }
-
-        if (dto.getServiceFee() != null) {
-            entity.setServiceFee(dto.getServiceFee());
-        }
-
-        if (dto.getBrokerageFee() != null) {
-            entity.setBrokerageFee(dto.getBrokerageFee());
-        }
-
-        if (dto.getManagerName() != null) {
-            entity.setManagerName(dto.getManagerName());
-        }
-
-        if (dto.getManagerPhone() != null) {
-            entity.setManagerPhone(dto.getManagerPhone());
-        }
-
-        if (dto.getDistrictId() != null) {
-            // chỉ cần set FK
-            entity.setDistrictId(dto.getDistrictId());
-        }
     }
 
     @Override
@@ -227,7 +158,6 @@ public class BuildingServiceImpl implements BuildingService {
                 .orElseThrow(() -> new RuntimeException("Building not found"));
 
         List<UserEntity> staffs = building.getUsers();
-
         List<UserDTO> result = new ArrayList<>();
 
         for (UserEntity user : staffs) {
@@ -236,8 +166,131 @@ public class BuildingServiceImpl implements BuildingService {
             dto.setFullname(user.getFullname());
             result.add(dto);
         }
-
         return result;
     }
 
+    @Override
+    public void uploadBuildingImage(Integer id, MultipartFile file) {
+        BuildingEntity building = buildingRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy tòa nhà"));
+
+        String fileName = fileStorageService.storeFile(file);
+        building.setThumbnail(fileName);
+        buildingRepository.save(building);
+    }
+
+    @Override
+    public List<BuildingSearchDTO> findAll(Map<String, Object> params, List<String> typeCode) {
+        BuildingSearchBuilder builder = buildingSearchBuilderConverter.toBuildingSearchBuilder(params, typeCode);
+        return buildingRepository.findAll(builder);
+    }
+
+    @Override
+    public BuildingDetailDTO findById(Integer id) {
+        BuildingEntity entity = buildingRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Building not found"));
+        return buildingDetailDTOConverter.toBuildingDetailDTO(entity);
+    }
+
+    @Override
+    @Transactional
+    public void uploadSubImage(Integer buildingId, MultipartFile file, String title, String description) {
+        BuildingEntity building = buildingRepository.findById(buildingId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy tòa nhà"));
+
+        long count = buildingImageRepository.findByBuilding_Id(buildingId).size();
+
+        if (count >= 3) {
+            throw new RuntimeException("Chỉ cho phép tối đa 3 ảnh phụ");
+        }
+
+        String fileName = fileStorageService.storeFile(file);
+
+        BuildingImageEntity imageEntity = new BuildingImageEntity();
+        imageEntity.setImage(fileName);
+        imageEntity.setTitle(title);
+        imageEntity.setDescription(description);
+        imageEntity.setBuilding(building);
+        imageEntity.setDisplayOrder((int) count + 1);
+
+        buildingImageRepository.save(imageEntity);
+    }
+
+    @Override
+    @Transactional
+    public void updateSubImage(Integer imageId, BuildingImageDTO dto) {
+        BuildingImageEntity imageEntity = buildingImageRepository.findById(imageId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy ảnh phụ"));
+
+        if (dto.getTitle() != null) {
+            imageEntity.setTitle(dto.getTitle());
+        }
+        if (dto.getDescription() != null) {
+            imageEntity.setDescription(dto.getDescription());
+        }
+        buildingImageRepository.save(imageEntity);
+    }
+
+    @Override
+    @Transactional
+    public void deleteSubImage(Integer imageId) {
+        BuildingImageEntity imageEntity = buildingImageRepository.findById(imageId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy ảnh phụ"));
+        buildingImageRepository.delete(imageEntity);
+    }
+
+    @Override
+    public void updateImageOrder(Integer imageId, Integer order) {
+        BuildingImageEntity image = buildingImageRepository.findById(imageId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy ảnh"));
+        image.setDisplayOrder(order);
+        buildingImageRepository.save(image);
+    }
+
+    // ================= NEW METHODS FOR PUBLIC API =================
+    
+    @Override
+    public List<BuildingImageDTO> getSubImages(Integer buildingId) {
+        List<BuildingImageEntity> images = buildingImageRepository.findByBuilding_Id(buildingId);
+        
+        return images.stream()
+                .map(entity -> {
+                    BuildingImageDTO dto = new BuildingImageDTO();
+                    dto.setId(entity.getId());
+                    dto.setImage(entity.getImage());
+                    dto.setTitle(entity.getTitle());
+                    dto.setDescription(entity.getDescription());
+                    dto.setDisplayOrder(entity.getDisplayOrder());
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<BuildingSearchDTO> getPublicBuildings(Map<String, Object> params, List<String> typeCode, Integer page, Integer size) {
+        // Thêm phân trang vào params
+        params.put("page", page);
+        params.put("size", size);
+        
+        BuildingSearchBuilder builder = buildingSearchBuilderConverter.toBuildingSearchBuilder(params, typeCode);
+        
+        // Nếu repository hỗ trợ phân trang, bạn có thể sử dụng Pageable
+        // return buildingRepository.findAll(builder, PageRequest.of(page - 1, size));
+        
+        return buildingRepository.findAll(builder);
+    }
+
+    @Override
+    public BuildingDetailDTO getPublicBuildingById(Integer id) {
+        BuildingEntity entity = buildingRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Building not found"));
+        
+        BuildingDetailDTO dto = buildingDetailDTOConverter.toBuildingDetailDTO(entity);
+        
+        // Load thêm images nếu cần
+        List<BuildingImageDTO> images = getSubImages(id);
+        dto.setImages(images);
+        
+        return dto;
+    }
 }

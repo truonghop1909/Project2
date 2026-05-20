@@ -11,11 +11,13 @@ public class TransactionEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "customer_id", nullable = false)
-    private Integer customerId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id", nullable = false)
+    private CustomerEntity customer;
 
-    @Column(name = "staff_id", nullable = false)
-    private Integer staffId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "staff_id", nullable = false)
+    private UserEntity staff;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "transactiontype_id", nullable = false) // ✅ đúng cột
@@ -33,22 +35,6 @@ public class TransactionEntity {
 
     public void setId(Integer id) {
         this.id = id;
-    }
-
-    public Integer getCustomerId() {
-        return customerId;
-    }
-
-    public void setCustomerId(Integer customerId) {
-        this.customerId = customerId;
-    }
-
-    public Integer getStaffId() {
-        return staffId;
-    }
-
-    public void setStaffId(Integer staffId) {
-        this.staffId = staffId;
     }
 
     public TransactionTypeEntity getTransactionType() {
@@ -73,5 +59,21 @@ public class TransactionEntity {
 
     public void setDate(Date date) {
         this.date = date;
+    }
+
+    public CustomerEntity getCustomer() {
+        return customer;
+    }
+
+    public void setCustomer(CustomerEntity customer) {
+        this.customer = customer;
+    }
+
+    public UserEntity getStaff() {
+        return staff;
+    }
+
+    public void setStaff(UserEntity staff) {
+        this.staff = staff;
     }
 }

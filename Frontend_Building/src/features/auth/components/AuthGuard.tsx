@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { jwtDecode } from "jwt-decode";
 
-type Role = "ROLE_ADMIN" | "ROLE_STAFF";
+type Role = "ADMIN" | "STAFF" | "USER";
 
 interface Props {
   children: React.ReactNode;
@@ -40,14 +40,18 @@ export default function AuthGuard({ children, requiredRole }: Props) {
       }
 
       const rawRoles = decoded.roles ?? decoded.authorities ?? [];
+      const roles = Array.isArray(rawRoles) ? rawRoles : [rawRoles];
 
-      const roles = Array.isArray(rawRoles)
-        ? rawRoles
-        : [rawRoles];
-
-      if (requiredRole && !roles.includes(requiredRole)) {
-        router.replace("/403");
-        return;
+      // Nếu có yêu cầu role, kiểm tra (hỗ trợ cả "STAFF" và "ROLE_STAFF")
+      if (requiredRole) {
+        const hasRequiredRole = roles.some(
+          (role) => role === requiredRole || role === `ROLE_${requiredRole}`
+        );
+        
+        if (!hasRequiredRole) {
+          router.replace("/403");
+          return;
+        }
       }
 
       setAuthorized(true);

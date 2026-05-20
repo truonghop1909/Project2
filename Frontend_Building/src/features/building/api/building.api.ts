@@ -1,43 +1,83 @@
+// src/features/building/api/building.api.ts
+
 import { axiosClient } from "@/shared/services/axiosClient";
-import { Building, BuildingDetail, BuildingSearch, BuildingUpdate } from "../types/building.type";
+import {
+  BuildingDetail,
+  BuildingSearch,
+  BuildingSearchDTO,
+  UserDTO
+} from "../types/building.type";
 
-/**
- * ==============================
- * BUILDING API
- * ==============================
- * Chứa toàn bộ API liên quan đến quản lý tòa nhà
- */
 export const buildingApi = {
-  /** 📌 ADMIN - GET /building */
-  getAll: (params?: BuildingSearch) =>
-    axiosClient.get<Building[]>("/building", { params }),
+  // ==================== PUBLIC APIS (Không cần token) ====================
+  
+  /**
+   * Lấy danh sách tòa nhà công khai (cho trang chủ)
+   */
+  getPublicBuildings: (params?: BuildingSearch) =>
+    axiosClient.get<BuildingSearchDTO[]>("/public/buildings", { params }),
 
-  /** 📌 ADMIN + STAFF - GET /building/{id} */
+  /**
+   * Lấy chi tiết tòa nhà công khai (cho khách hàng)
+   */
+  getPublicBuildingById: (id: number) =>
+    axiosClient.get<BuildingDetail>(`/public/buildings/${id}`),
+
+  // ==================== AUTHENTICATED APIS (Cần token) ====================
+
+  /**
+   * Lấy danh sách tòa nhà theo điều kiện tìm kiếm (cho admin/staff)
+   */
+  getAll: (params?: BuildingSearch) =>
+    axiosClient.get<BuildingSearchDTO[]>("/building", { params }),
+
+  /**
+   * Lấy chi tiết tòa nhà theo ID (cho admin/staff)
+   */
   getById: (id: number) =>
     axiosClient.get<BuildingDetail>(`/building/${id}`),
 
-  /** 📌 ADMIN - POST /building */
-  create: (data: any) =>
-    axiosClient.post("/building", data),
+  /**
+   * Tạo mới tòa nhà
+   */
+  create: (payload: Partial<BuildingDetail>) =>
+    axiosClient.post<BuildingDetail>("/building", payload),
 
-  /** 📌 ADMIN - PUT /building/{id} */
-  update(id: number, payload: BuildingUpdate) {
-    return axiosClient.put(`/building/${id}`, payload);
-  },
+  /**
+   * Cập nhật thông tin tòa nhà
+   */
+  update: (id: number, payload: Partial<BuildingDetail>) =>
+    axiosClient.put<BuildingDetail>(`/building/${id}`, payload),
 
-  /** 📌 ADMIN - DELETE /building/{id} */
+  /**
+   * Xóa tòa nhà
+   */
   delete: (id: number) =>
     axiosClient.delete(`/building/${id}`),
 
-  /** 📌 STAFF - GET /building/my-building */
+  /**
+   * Lấy danh sách tòa nhà của nhân viên hiện tại
+   */
   getMyBuildings: (params?: BuildingSearch) =>
-    axiosClient.get<Building[]>("/building/my-building", { params }),
+    axiosClient.get<BuildingSearchDTO[]>("/building/my-building", { params }),
 
-  /** ✅ 📌 STAFF - POST /building/{buildingId}/assignment/current */
+  // ==================== STAFF ASSIGNMENT ====================
+
+  /**
+   * Gán tòa nhà cho nhân viên hiện tại
+   */
   assignCurrent: (buildingId: number) =>
     axiosClient.post(`/building/${buildingId}/assignment/current`),
 
-  /** 📌 STAFF - DELETE /building/{buildingId}/assignment/current */
+  /**
+   * Hủy gán tòa nhà cho nhân viên hiện tại
+   */
   unassignCurrent: (buildingId: number) =>
     axiosClient.delete(`/building/${buildingId}/assignment/current`),
+
+  /**
+   * Lấy danh sách nhân viên được gán cho tòa nhà
+   */
+  getAssignedStaff: (buildingId: number) =>
+    axiosClient.get<UserDTO[]>(`/building/${buildingId}/staff`),
 };

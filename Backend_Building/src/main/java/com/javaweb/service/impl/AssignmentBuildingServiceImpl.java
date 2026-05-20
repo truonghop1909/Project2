@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.javaweb.builder.BuildingSearchBuilder;
+import com.javaweb.constant.UserRole;
 import com.javaweb.converter.AssignmentBuildingConverter;
 import com.javaweb.model.AssignmentBuildingDTO;
 import com.javaweb.model.BuildingSearchDTO;
@@ -37,7 +38,7 @@ public class AssignmentBuildingServiceImpl implements AssignmentBuildingService 
     @Override
     public List<StaffAssignmentDTO> loadStaff(Integer buildingId) {
 
-        List<UserEntity> staffs = userRepository.findByStatusAndRoles_Code(1, "ROLE_STAFF");
+        List<UserEntity> staffs = userRepository.findByStatusAndRoles_Code(1, UserRole.STAFF);
 
         List<Integer> assignedStaffIds = assignmentRepo.findStaffIdsByBuildingId(buildingId);
 

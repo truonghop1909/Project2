@@ -7,43 +7,48 @@ import CustomerFilter from "@/features/customer/components/filter/CustomerFilter
 import CustomerTable from "@/features/customer/components/table/CustomerTable";
 import CustomerModalHub from "@/features/customer/components/modal/CustomerModalHub";
 import { assignmentCustomerApi } from "@/features/customer/api/assignmentCustomer.api";
+import { CustomerSearchDTO, TransactionTypeDTO } from "@/features/customer/types/customer.type";
+import CustomerDetailModal from "../components/detail/CustomerDetailModal";
+import { transactionTypeApi } from "../api/transactionType.api";
 
 export default function StaffCustomerView() {
   const {
     myCustomers,
     allCustomers,
     fetchMyCustomers,
-    fetchAllCustomers,
+    fetchStaffCustomers,
     lastSearchAllRef,
   } = useCustomer();
 
   const [transactionCustomerId, setTransactionCustomerId] = useState<number | null>(null);
-
+  const [showCreate, setShowCreate] = useState(false);
+  const [editCustomerId, setEditCustomerId] = useState<number | null>(null);
+  const [viewCustomerId, setViewCustomerId] = useState<number | null>(null);
+  const [transactionTypes, setTransactionTypes] = useState<TransactionTypeDTO[]>([]);
   useEffect(() => {
     fetchMyCustomers();
-    fetchAllCustomers({});
-  }, [fetchMyCustomers, fetchAllCustomers]);
+    fetchStaffCustomers({});
+    transactionTypeApi.getAll().then((res) => setTransactionTypes(res.data));
+  }, [fetchMyCustomers, fetchStaffCustomers]);
 
-  // ✅ lọc bảng ALL để bỏ khách đã nhận
+  // Bỏ các khách staff đã nhận khỏi bảng "Tất cả khách hàng"
   const availableCustomers = useMemo(() => {
     const myIds = new Set((myCustomers ?? []).map((c) => c.id));
     return (allCustomers ?? []).filter((c) => !myIds.has(c.id));
   }, [myCustomers, allCustomers]);
 
-  // ✅ filter dùng chung cho cả 2 bảng
-  // - ALL: search theo params
-  // - MY: hiện tại backend /my chưa nhận params => chỉ reload list
-  const handleSearch = (params: any) => {
-    fetchAllCustomers(params);
+  // Staff:
+  // - bảng ALL: search theo /customer/staff/search
+  // - bảng MY: backend hiện chưa nhận params nên chỉ reload list
+  const handleSearch = (params?: CustomerSearchDTO) => {
+    fetchStaffCustomers(params);
     fetchMyCustomers();
   };
-  const [showCreate, setShowCreate] = useState(false);
-  const [editCustomerId, setEditCustomerId] = useState<number | null>(null);
 
   const reloadBoth = async () => {
     await Promise.all([
       fetchMyCustomers(),
-      fetchAllCustomers(lastSearchAllRef.current),
+      fetchStaffCustomers(lastSearchAllRef.current),
     ]);
   };
 
@@ -61,11 +66,15 @@ export default function StaffCustomerView() {
     await reloadBoth();
   };
 
+
+
   return (
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="mx-auto max-w-7xl space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold text-gray-800">Quản lý khách hàng</h1>
+          <h1 className="text-2xl font-semibold text-gray-800">
+            Quản lý khách hàng
+          </h1>
 
           <button
             onClick={() => setShowCreate(true)}
@@ -75,37 +84,42 @@ export default function StaffCustomerView() {
           </button>
         </div>
 
-        {/* FILTER */}
-        <CustomerFilter onSearch={handleSearch} />
+        <CustomerFilter
+          onSearch={handleSearch}
+          transactionTypes={transactionTypes}
+        />
 
-        {/* ====== BẢNG 1: KHÁCH ĐÃ NHẬN ====== */}
         <div className="space-y-3">
           <h2 className="text-lg font-semibold">Khách hàng đã nhận</h2>
 
           <CustomerTable
             customers={myCustomers ?? []}
             permission={{ ...CUSTOMER_PERMISSIONS.STAFF, canTake: false }}
-            onEdit={(c) => setEditCustomerId(c.id)}          // ✅ sửa
+            onEdit={(c) => setEditCustomerId(c.id)}
             onTransactions={setTransactionCustomerId}
             onUnassign={unassignCustomer}
+            onView={setViewCustomerId}
           />
         </div>
 
-        {/* ====== BẢNG 2: TẤT CẢ KHÁCH ====== */}
         <div className="space-y-3">
           <h2 className="text-lg font-semibold">Tất cả khách hàng</h2>
 
           <CustomerTable
             customers={availableCustomers}
-            permission={{ ...CUSTOMER_PERMISSIONS.STAFF, canUnassign: false, canTake: true }}
-            onEdit={(c) => setEditCustomerId(c.id)}          // ✅ sửa
+            permission={{
+              ...CUSTOMER_PERMISSIONS.STAFF,
+              canUnassign: false,
+              canTake: true,
+            }}
+            onView={setViewCustomerId}
+            onEdit={(c) => setEditCustomerId(c.id)}
             onTransactions={setTransactionCustomerId}
             onTake={takeCustomer}
           />
         </div>
       </div>
 
-      {/* MODAL giao dịch */}
       <CustomerModalHub
         showCreate={showCreate}
         editCustomerId={editCustomerId}
@@ -118,6 +132,12 @@ export default function StaffCustomerView() {
         onCloseTransaction={() => setTransactionCustomerId(null)}
         onSuccess={reloadBoth}
       />
+      {viewCustomerId && (
+        <CustomerDetailModal
+          customerId={viewCustomerId}
+          onClose={() => setViewCustomerId(null)}
+        />
+      )}
     </div>
   );
 }

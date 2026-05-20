@@ -11,7 +11,7 @@ interface UserRoleModalProps {
   onUpdateUser: (user: UserDTO) => void;
 }
 
-const ALL_ROLES = ["ROLE_ADMIN", "ROLE_STAFF"];
+const ALL_ROLES = ["", "STAFF"];
 
 export default function UserRoleModal({
   user,

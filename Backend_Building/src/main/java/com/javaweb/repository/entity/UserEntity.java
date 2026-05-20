@@ -3,7 +3,6 @@ package com.javaweb.repository.entity;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -17,7 +16,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "user")
+@Table(name = "users")
 public class UserEntity {
 
     @Id
@@ -42,14 +41,24 @@ public class UserEntity {
     @Column(name="status")
     private Integer status;
 
-    // ⭐ QUAN TRỌNG NHẤT: EAGER để JWT đọc được role
-    @ManyToMany(fetch = FetchType.EAGER)
+    // ================= ROLE =================
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "user_role",
         joinColumns = @JoinColumn(name = "user_id"),
         inverseJoinColumns = @JoinColumn(name = "role_id")
     )
-    private List<RoleEntity> roles = new ArrayList<>();
+    private List<RoleEntity> roles = new ArrayList();
+
+
+    // ================= STAFF QUẢN LÝ CUSTOMER =================
+    @ManyToMany(mappedBy = "staffs")
+    private List<CustomerEntity> customers = new ArrayList<>();
+
+
+    // ================= STAFF THỰC HIỆN GIAO DỊCH =================
+     @OneToMany(mappedBy = "staff", fetch = FetchType.LAZY)
+     private List<TransactionEntity> transactions = new ArrayList<>();
 
     // ===== getter / setter =====
     public Integer getId() {

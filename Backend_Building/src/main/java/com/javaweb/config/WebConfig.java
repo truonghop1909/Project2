@@ -1,3 +1,5 @@
+// src/main/java/com/javaweb/config/WebConfig.java
+
 package com.javaweb.config;
 
 import org.springframework.context.annotation.Configuration;

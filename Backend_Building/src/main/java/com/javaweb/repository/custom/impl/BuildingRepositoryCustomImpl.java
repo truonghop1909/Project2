@@ -31,9 +31,6 @@ public class BuildingRepositoryCustomImpl implements BuildingRepositoryCustom {
         if (builder.getRentAreaFrom() != null || builder.getRentAreaTo() != null) {
             sql.append(" INNER JOIN rentarea ra ON b.id = ra.building_id ");
         }
-
-        // JOIN DISTRICT
-        sql.append(" LEFT JOIN district d ON b.district_id = d.id ");
     }
 
     /* ================= WHERE NORMAL ================= */
@@ -45,22 +42,29 @@ public class BuildingRepositoryCustomImpl implements BuildingRepositoryCustom {
             params.add("%" + builder.getName().trim() + "%");
         }
 
-        // Quận (theo tên)
-        if (isNotBlank(builder.getDistrict())) {
-            where.append(" AND d.name LIKE ? ");
-            params.add("%" + builder.getDistrict().trim() + "%");
-        }
-
-        // Phường
-        if (isNotBlank(builder.getWard())) {
-            where.append(" AND b.ward LIKE ? ");
-            params.add("%" + builder.getWard().trim() + "%");
-        }
-
-        // Đường
+        // Đường / Số nhà
         if (isNotBlank(builder.getStreet())) {
             where.append(" AND b.street LIKE ? ");
             params.add("%" + builder.getStreet().trim() + "%");
+        }
+
+        // === ĐỊA CHỈ MỚI (sau 07/2025) ===
+        // Tỉnh/Thành phố (theo mã hoặc tên)
+        if (isNotBlank(builder.getProvinceId())) {
+            where.append(" AND b.province_id = ? ");
+            params.add(builder.getProvinceId().trim());
+        } else if (isNotBlank(builder.getProvinceName())) {
+            where.append(" AND b.province_name LIKE ? ");
+            params.add("%" + builder.getProvinceName().trim() + "%");
+        }
+
+        // Xã/Phường mới (theo mã hoặc tên)
+        if (isNotBlank(builder.getWardCode())) {
+            where.append(" AND b.ward_code = ? ");
+            params.add(builder.getWardCode().trim());
+        } else if (isNotBlank(builder.getWardName())) {
+            where.append(" AND b.ward_name LIKE ? ");
+            params.add("%" + builder.getWardName().trim() + "%");
         }
 
         // Số tầng hầm
@@ -78,6 +82,18 @@ public class BuildingRepositoryCustomImpl implements BuildingRepositoryCustom {
         if (builder.getFloorAreaTo() != null) {
             where.append(" AND b.floor_area <= ? ");
             params.add(builder.getFloorAreaTo());
+        }
+
+        // Hướng
+        if (isNotBlank(builder.getDirection())) {
+            where.append(" AND b.direction = ? ");
+            params.add(builder.getDirection().trim());
+        }
+
+        // Hạng
+        if (isNotBlank(builder.getLevel())) {
+            where.append(" AND b.level = ? ");
+            params.add(builder.getLevel().trim());
         }
     }
 
@@ -123,13 +139,15 @@ public class BuildingRepositoryCustomImpl implements BuildingRepositoryCustom {
 
         appendOrderBySafe(builder, sql);
 
-        if (builder.getPage() != null && builder.getSize() != null) {
-            int page = builder.getPage();
-            int size = builder.getSize();
+        if (builder.hasPagination()) {
+            Integer page = builder.getPage();
+            Integer size = builder.getSize();
 
             // tránh page/size âm hoặc =0
-            if (page < 1) page = 1;
-            if (size < 1) size = 10;
+            if (page == null || page < 1)
+                page = 1;
+            if (size == null || size < 1)
+                size = 10;
 
             int offset = (page - 1) * size;
 
@@ -143,43 +161,51 @@ public class BuildingRepositoryCustomImpl implements BuildingRepositoryCustom {
      * ORDER BY: bắt buộc whitelist để tránh injection từ sortBy/sortDirection.
      */
     private void appendOrderBySafe(BuildingSearchBuilder builder, StringBuilder sql) {
-    if (builder.getSortBy() == null || builder.getSortBy().trim().isEmpty()) return;
+        if (builder.getSortBy() == null || builder.getSortBy().trim().isEmpty())
+            return;
 
-    Set<String> allowedSortColumns = new HashSet<>(Arrays.asList(
-        "id",
-        "name",
-        "rent_price",
-        "floor_area",
-        "number_of_basement",
-        "service_fee",
-        "brokerage_fee",
-        "manager_name",
-        "manager_phone"
-    ));
+        Set<String> allowedSortColumns = new HashSet<>(Arrays.asList(
+                "id",
+                "name",
+                "rent_price",
+                "floor_area",
+                "number_of_basement",
+                "service_fee",
+                "brokerage_fee",
+                "manager_name",
+                "manager_phone",
+                "province_name",
+                "ward_name",
+                "street"));
 
-    String sortBy = builder.getSortBy().trim().toLowerCase();
-    if (!allowedSortColumns.contains(sortBy)) return;
+        String sortBy = builder.getSortBy().trim().toLowerCase();
+        if (!allowedSortColumns.contains(sortBy))
+            return;
 
-    String direction = "ASC";
-    if (builder.getSortDirection() != null && "DESC".equalsIgnoreCase(builder.getSortDirection().trim())) {
-        direction = "DESC";
+        String direction = "ASC";
+        if (builder.getSortDirection() != null && "DESC".equalsIgnoreCase(builder.getSortDirection().trim())) {
+            direction = "DESC";
+        }
+
+        sql.append(" ORDER BY b.").append(sortBy).append(" ").append(direction).append(" ");
     }
 
-    sql.append(" ORDER BY b.").append(sortBy).append(" ").append(direction).append(" ");
-}
     /* ================= MAIN ================= */
     @Override
     public List<BuildingSearchDTO> findAll(BuildingSearchBuilder builder) {
 
         StringBuilder sql = new StringBuilder(
                 "SELECT DISTINCT " +
-                " b.id, b.name, b.street, b.ward, b.district_id, " +
-                " d.name AS district_name, " +
-                " b.number_of_basement, b.floor_area, " +
-                " b.rent_price, b.service_fee, b.brokerage_fee, " +
-                " b.manager_name, b.manager_phone " +
-                "FROM building b "
-        );
+                        " b.id, b.name, b.street, " + // ← THÊM DÒNG NÀY
+                        " b.number_of_basement, b.floor_area, " +
+                        " b.rent_price, b.service_fee, b.brokerage_fee, " +
+                        " b.manager_name, b.manager_phone, " +
+                        // === ĐỊA CHỈ MỚI ===
+                        " b.province_id, b.province_name, " +
+                        " b.ward_code, b.ward_name, b.full_address, " +
+                        // === direction VÀ level ===
+                        " b.direction, b.level " +
+                        "FROM building b ");
 
         joinTable(builder, sql);
 
@@ -198,7 +224,7 @@ public class BuildingRepositoryCustomImpl implements BuildingRepositoryCustom {
         List<BuildingSearchDTO> result = new ArrayList<>();
 
         try (Connection conn = ConnectionJDBCUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+                PreparedStatement ps = conn.prepareStatement(sql.toString())) {
 
             // bind params
             for (int i = 0; i < params.size(); i++) {
@@ -209,17 +235,30 @@ public class BuildingRepositoryCustomImpl implements BuildingRepositoryCustom {
                 while (rs.next()) {
                     BuildingSearchDTO dto = new BuildingSearchDTO();
 
+                    // Set ID
                     dto.setId(rs.getInt("id"));
                     dto.setName(rs.getString("name"));
 
-                    String street = rs.getString("street");
-                    String ward = rs.getString("ward");
-                    String districtName = rs.getString("district_name");
+                    // === THÊM direction VÀ level ===
+                    dto.setDirection(rs.getString("direction")); // ← THÊM DÒNG NÀY
+                    dto.setLevel(rs.getString("level"));
+                    // === XỬ LÝ ĐỊA CHỈ HIỂN THỊ ===
+                    // Ưu tiên dùng địa chỉ mới (full_address) nếu có
+                    // Xử lý địa chỉ hiển thị
+                    String fullAddress = rs.getString("full_address");
+                    if (isNotBlank(fullAddress)) {
+                        dto.setAddress(fullAddress);
+                    } else {
+                        // Fallback - không dùng ward cũ nữa
+                        String street = rs.getString("street");
+                        String wardName = rs.getString("ward_name"); // Dùng ward_name mới
+                        String provinceName = rs.getString("province_name");
 
-                    // build address sạch hơn (không bị "null")
-                    String address = joinNotBlank(", ", street, ward, districtName);
-                    dto.setAddress(address);
+                        String address = buildAddress(street, wardName, provinceName);
+                        dto.setAddress(address);
+                    }
 
+                    // Set các field
                     dto.setNumberOfBasement(rs.getInt("number_of_basement"));
                     dto.setFloorArea(rs.getDouble("floor_area"));
                     dto.setRentPrice(rs.getDouble("rent_price"));
@@ -228,30 +267,51 @@ public class BuildingRepositoryCustomImpl implements BuildingRepositoryCustom {
                     dto.setManagerName(rs.getString("manager_name"));
                     dto.setManagerPhone(rs.getString("manager_phone"));
 
+                    // Set địa chỉ mới
+                    dto.setProvinceName(rs.getString("province_name"));
+                    dto.setWardName(rs.getString("ward_name"));
+                    dto.setStreet(rs.getString("street"));
                     result.add(dto);
                 }
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+            throw new RuntimeException("Lỗi khi truy vấn danh sách tòa nhà: " + e.getMessage(), e);
         }
 
         return result;
     }
 
     /* ================= HELPERS ================= */
+
+    /**
+     * Kiểm tra chuỗi không null và không rỗng
+     */
     private static boolean isNotBlank(String s) {
         return s != null && !s.trim().isEmpty();
     }
 
+    /**
+     * Nối các chuỗi không rỗng với delimiter
+     */
     private static String joinNotBlank(String delimiter, String... parts) {
         List<String> cleaned = new ArrayList<>();
         for (String p : parts) {
             if (p != null) {
                 String t = p.trim();
-                if (!t.isEmpty()) cleaned.add(t);
+                if (!t.isEmpty() && !"null".equalsIgnoreCase(t)) {
+                    cleaned.add(t);
+                }
             }
         }
         return String.join(delimiter, cleaned);
+    }
+
+    /**
+     * Xây dựng địa chỉ từ các phần tử không rỗng
+     */
+    private static String buildAddress(String... parts) {
+        return joinNotBlank(", ", parts);
     }
 }

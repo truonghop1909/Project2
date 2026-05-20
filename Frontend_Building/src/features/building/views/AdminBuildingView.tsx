@@ -10,7 +10,7 @@ import BuildingDetailModal from "../components/detail/BuildingDetailModal";
 import BuildingTable from "@/features/building/components/table/BuildingTable";
 
 export default function AdminBuildingView() {
-  const { buildings, fetchBuildings, deleteBuilding } = useBuilding("ROLE_ADMIN");
+  const { buildings, fetchBuildings, deleteBuilding } = useBuilding("");
 
   const [viewBuildingId, setViewBuildingId] = useState<number | null>(null);
   const [assignBuildingId, setAssignBuildingId] = useState<number | null>(null);

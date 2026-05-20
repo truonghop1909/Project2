@@ -17,15 +17,25 @@ public class BuildingEntity {
     @Column(name = "name")
     private String name;
 
-    /* ===== ADDRESS ===== */
-    @Column(name = "district_id")
-    private Integer districtId;
-
-    @Column(name = "ward")
-    private String ward;
-
+    // === ĐỊA CHỈ ===
     @Column(name = "street")
     private String street;
+    
+    // === ĐỊA CHỈ MỚI (SAU 07/2025) ===
+    @Column(name = "province_id", length = 10)
+    private String provinceId;
+    
+    @Column(name = "province_name", length = 100)
+    private String provinceName;
+    
+    @Column(name = "ward_code", length = 10)
+    private String wardCode;
+    
+    @Column(name = "ward_name", length = 100)
+    private String wardName;
+    
+    @Column(name = "full_address", length = 500)
+    private String fullAddress;  // Địa chỉ đầy đủ, có thể computed từ các field khác
 
     /* ===== BUILDING INFO ===== */
     @Column(name = "structure")
@@ -91,25 +101,26 @@ public class BuildingEntity {
     @Column(name = "brokerage_fee")
     private Double brokerageFee;
 
+    @Lob
     @Column(name = "note")
     private String note;
 
-    /* ===== RELATION ===== */
+    @Column(name = "google_map_link", length = 500)
+    private String googleMapLink;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "district_id", insertable = false, updatable = false)
-    private DistrictEntity district;
+    // ✅ THÊM DÒNG NÀY - Thumbnail (Ảnh đại diện)
+    @Column(name = "thumbnail", length = 255)
+    private String thumbnail;
+
+    @OneToMany(mappedBy = "building", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BuildingImageEntity> images = new ArrayList<>();
 
     @OneToMany(mappedBy = "building", fetch = FetchType.LAZY)
     private List<RentAreaEntity> rentAreas = new ArrayList<>();
 
     /* ===== MANY TO MANY WITH USER (ASSIGN STAFF) ===== */
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-        name = "assignmentbuilding",
-        joinColumns = @JoinColumn(name = "building_id"),
-        inverseJoinColumns = @JoinColumn(name = "staff_id")
-    )
+    @JoinTable(name = "assignmentbuilding", joinColumns = @JoinColumn(name = "building_id"), inverseJoinColumns = @JoinColumn(name = "staff_id"))
     private List<UserEntity> users = new ArrayList<>();
 
     /* ===== GETTER / SETTER ===== */
@@ -138,22 +149,6 @@ public class BuildingEntity {
         this.name = name;
     }
 
-    public Integer getDistrictId() {
-        return districtId;
-    }
-
-    public void setDistrictId(Integer districtId) {
-        this.districtId = districtId;
-    }
-
-    public String getWard() {
-        return ward;
-    }
-
-    public void setWard(String ward) {
-        this.ward = ward;
-    }
-
     public String getStreet() {
         return street;
     }
@@ -161,7 +156,79 @@ public class BuildingEntity {
     public void setStreet(String street) {
         this.street = street;
     }
+    
+    // === ĐỊA CHỈ MỚI ===
+    public String getProvinceId() {
+        return provinceId;
+    }
+    
+    public void setProvinceId(String provinceId) {
+        this.provinceId = provinceId;
+    }
+    
+    public String getProvinceName() {
+        return provinceName;
+    }
+    
+    public void setProvinceName(String provinceName) {
+        this.provinceName = provinceName;
+    }
+    
+    public String getWardCode() {
+        return wardCode;
+    }
+    
+    public void setWardCode(String wardCode) {
+        this.wardCode = wardCode;
+    }
+    
+    public String getWardName() {
+        return wardName;
+    }
+    
+    public void setWardName(String wardName) {
+        this.wardName = wardName;
+    }
+    
+    public String getFullAddress() {
+        return fullAddress;
+    }
+    
+    public void setFullAddress(String fullAddress) {
+        this.fullAddress = fullAddress;
+    }
+    
+    // ✅ GETTER & SETTER CHO THUMBNAIL
+    public String getThumbnail() {
+        return thumbnail;
+    }
+    
+    public void setThumbnail(String thumbnail) {
+        this.thumbnail = thumbnail;
+    }
+    
+    // Helper method để tạo địa chỉ đầy đủ
+    @PrePersist
+    @PreUpdate
+    public void updateFullAddress() {
+        if (this.street != null || this.wardName != null || this.provinceName != null) {
+            StringBuilder address = new StringBuilder();
+            if (this.street != null && !this.street.isEmpty()) {
+                address.append(this.street);
+            }
+            if (this.wardName != null && !this.wardName.isEmpty()) {
+                if (address.length() > 0) address.append(", ");
+                address.append(this.wardName);
+            }
+            if (this.provinceName != null && !this.provinceName.isEmpty()) {
+                if (address.length() > 0) address.append(", ");
+                address.append(this.provinceName);
+            }
+            this.fullAddress = address.toString();
+        }
+    }
 
+    // === CÁC GETTER/SETTER KHÁC ===
     public String getStructure() {
         return structure;
     }
@@ -330,12 +397,20 @@ public class BuildingEntity {
         this.note = note;
     }
 
-    public DistrictEntity getDistrict() {
-        return district;
+    public String getGoogleMapLink() {
+        return googleMapLink;
     }
 
-    public void setDistrict(DistrictEntity district) {
-        this.district = district;
+    public void setGoogleMapLink(String googleMapLink) {
+        this.googleMapLink = googleMapLink;
+    }
+
+    public List<BuildingImageEntity> getImages() {
+        return images;
+    }
+
+    public void setImages(List<BuildingImageEntity> images) {
+        this.images = images;
     }
 
     public List<RentAreaEntity> getRentAreas() {

@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,7 +38,6 @@ public class AuthAPI {
     // ================= REGISTER =================
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequestDTO request) {
-
         if (userRepository.existsByUsername(request.getUsername())) {
             return ResponseEntity.badRequest().body("Username already exists");
         }
@@ -49,10 +47,17 @@ public class AuthAPI {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setStatus(1);
 
-        // ⭐ GÁN ROLE_USER
+        // ⭐ KIỂM TRA ROLE CÓ TỒN TẠI KHÔNG
         RoleEntity roleUser = roleRepository.findByCode("ROLE_USER");
-        user.getRoles().add(roleUser);
+        if (roleUser == null) {
+            // Nếu chưa có role USER thì tạo mới
+            roleUser = new RoleEntity();
+            roleUser.setCode("ROLE_USER");
+            roleUser.setName("User Role");
+            roleRepository.save(roleUser);
+        }
 
+        user.getRoles().add(roleUser);
         userRepository.save(user);
 
         return ResponseEntity.ok("Register success");

@@ -7,4 +7,7 @@ import com.javaweb.repository.entity.RoleEntity;
 public interface RoleRepository extends JpaRepository<RoleEntity, Integer> {
 
     RoleEntity findByCode(String code);
+    
+    // 👇 Thêm method này
+    boolean existsByCode(String code);
 }

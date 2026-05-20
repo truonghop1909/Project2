@@ -17,7 +17,7 @@ export default function StaffBuildingsPage() {
     unassignBuilding,
     assignBuilding,
     fetchBuildings, // nếu bạn muốn dùng lại
-  } = useBuilding("ROLE_STAFF");
+  } = useBuilding("STAFF");
 
   const [viewId, setViewId] = useState<number | null>(null);
 

@@ -1,39 +1,77 @@
 package com.javaweb.repository.entity;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.IdClass;
-import javax.persistence.Table;
-
+import javax.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "assignmentbuilding")
-@IdClass(AssignmentBuildingId.class)
 public class AssignmentBuildingEntity {
 
     @Id
-    @Column(name = "building_id")
-    private Integer buildingId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
-    @Id
-    @Column(name = "staff_id")
-    private Integer staffId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "building_id", nullable = false)
+    private BuildingEntity building;
 
-	public Integer getBuildingId() {
-		return buildingId;
-	}
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "staff_id", nullable = false)
+    private UserEntity staff;
 
-	public void setBuildingId(Integer buildingId) {
-		this.buildingId = buildingId;
-	}
+    @Column(name = "assigned_at")
+    private LocalDateTime assignedAt;
 
-	public Integer getStaffId() {
-		return staffId;
-	}
+    @Column(name = "assigned_by")
+    private Integer assignedBy;
 
-	public void setStaffId(Integer staffId) {
-		this.staffId = staffId;
-	}
-	
+    public AssignmentBuildingEntity() {}
+
+    @PrePersist
+    public void prePersist() {
+        if (this.assignedAt == null) {
+            this.assignedAt = LocalDateTime.now();
+        }
+    }
+
+    // Getters & Setters
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public BuildingEntity getBuilding() {
+        return building;
+    }
+
+    public void setBuilding(BuildingEntity building) {
+        this.building = building;
+    }
+
+    public UserEntity getStaff() {
+        return staff;
+    }
+
+    public void setStaff(UserEntity staff) {
+        this.staff = staff;
+    }
+
+    public LocalDateTime getAssignedAt() {
+        return assignedAt;
+    }
+
+    public void setAssignedAt(LocalDateTime assignedAt) {
+        this.assignedAt = assignedAt;
+    }
+
+    public Integer getAssignedBy() {
+        return assignedBy;
+    }
+
+    public void setAssignedBy(Integer assignedBy) {
+        this.assignedBy = assignedBy;
+    }
 }

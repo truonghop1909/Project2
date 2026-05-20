@@ -2,7 +2,7 @@
 
 import AssignmentModal from "@/features/assignment/components/AssignmentModal";
 import BuildingCreateModal from "@/features/building/components/modal/BuildingCreateModal";
-import BuildingEditModal from "@/features/building/components/modal/BuildingEditModal";
+import BuildingEditModal from "@/features/building/components/edit/BuildingEditModal";
 
 interface Props {
   assignBuildingId: number | null;

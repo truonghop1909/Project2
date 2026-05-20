@@ -5,16 +5,20 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.firewall.HttpFirewall;
+import org.springframework.security.web.firewall.StrictHttpFirewall;
+import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.cors.CorsConfiguration;
 
+import com.javaweb.constant.UserRole;
 import com.javaweb.security.jwt.JwtAuthenticationFilter;
 
 @Configuration
@@ -28,35 +32,49 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
 
+    @Bean
+    public HttpFirewall getHttpFirewall() {
+        StrictHttpFirewall firewall = new StrictHttpFirewall();
+        firewall.setAllowUrlEncodedSlash(true);
+        firewall.setAllowUrlEncodedPercent(true);
+        firewall.setAllowSemicolon(true);
+        firewall.setAllowBackSlash(true);
+        firewall.setAllowUrlEncodedPeriod(true);
+        return firewall;
+    }
+
+    @Override
+    public void configure(WebSecurity web) throws Exception {
+        web.httpFirewall(getHttpFirewall());
+        web.ignoring().antMatchers(
+            "/uploads/**",
+            "/static/**",
+            "/public/**"  // Cho phép public routes
+        );
+    }
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-
         http
                 .cors().and()
                 .csrf().disable()
-
-                // 🔥 TẮT SESSION
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
-
-                // 🔥 TẮT LOGIN MẶC ĐỊNH
-                .formLogin().disable()
-                .httpBasic().disable()
-
                 .authorizeRequests()
-
+                // Public routes - không cần authentication
                 .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .antMatchers("/api/auth/**").permitAll()
-
-                // 🔒 ADMIN
-                .antMatchers("/api/admin/**").hasRole("ADMIN")
-
+                .antMatchers("/api/public/**").permitAll()  // Cho phép tất cả API public
+                .antMatchers("/uploads/**").permitAll()
+                // Authenticated routes
+                .antMatchers("/api/building/**").authenticated()
+                .antMatchers("/api/admin/**").hasRole(UserRole.ADMIN)
                 .anyRequest().authenticated()
-
                 .and()
-                .addFilterBefore(jwtAuthenticationFilter,
-                        UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .formLogin().disable()
+                .httpBasic().disable();
     }
 
     @Bean

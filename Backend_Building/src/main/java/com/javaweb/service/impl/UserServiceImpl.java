@@ -9,6 +9,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import com.javaweb.constant.UserRole;
 import com.javaweb.converter.UserConverter;
 import com.javaweb.model.UserCreateRequestDTO;
 import com.javaweb.model.UserDTO;
@@ -69,7 +70,7 @@ public class UserServiceImpl implements UserService {
 
         if (dto.getRoleCodes() == null || dto.getRoleCodes().isEmpty()) {
             // REGISTER → mặc định STAFF
-            roles.add(roleRepository.findByCode("ROLE_STAFF"));
+            roles.add(roleRepository.findByCode(UserRole.STAFF));
         } else {
             // ADMIN tạo user
             for (String roleCode : dto.getRoleCodes()) {
@@ -201,7 +202,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserDTO> getActiveStaff() {
-        List<UserEntity> entities = userRepository.findByStatusAndRoles_Code(1, "ROLE_STAFF");
+        List<UserEntity> entities = userRepository.findByStatusAndRoles_Code(1, UserRole.STAFF);
 
         return entities.stream()
                 .map(this::convertToDTO)

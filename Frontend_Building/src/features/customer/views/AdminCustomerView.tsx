@@ -6,23 +6,52 @@ import { CUSTOMER_PERMISSIONS } from "@/features/customer/permissions";
 import CustomerFilter from "@/features/customer/components/filter/CustomerFilter";
 import CustomerTable from "@/features/customer/components/table/CustomerTable";
 import CustomerModalHub from "@/features/customer/components/modal/CustomerModalHub";
+import CustomerDetailModal from "../components/detail/CustomerDetailModal";
+import { customerApi } from "@/features/customer/api/customer.api";
+import { CustomerSearchDTO, TransactionTypeDTO } from "@/features/customer/types/customer.type";
+import { transactionTypeApi } from "../api/transactionType.api";
 
 export default function AdminCustomerView() {
-  const { allCustomers, fetchAllCustomers } = useCustomer();
+  const { allCustomers, fetchAdminCustomers, lastSearchAllRef } = useCustomer();
 
   const [showCreate, setShowCreate] = useState(false);
   const [editCustomerId, setEditCustomerId] = useState<number | null>(null);
   const [assignCustomerId, setAssignCustomerId] = useState<number | null>(null);
   const [transactionCustomerId, setTransactionCustomerId] = useState<number | null>(null);
+  const [viewCustomerId, setViewCustomerId] = useState<number | null>(null);
 
   useEffect(() => {
-    fetchAllCustomers();
-  }, [fetchAllCustomers]);
+    fetchAdminCustomers();
+  }, [fetchAdminCustomers]);
+
+  const approveCustomer = async (customerId: number) => {
+    if (!confirm("Bạn có chắc muốn duyệt khách hàng này?")) return;
+    await customerApi.approve(customerId);
+    alert("Duyệt khách hàng thành công");
+    await fetchAdminCustomers(lastSearchAllRef.current);
+  };
+
+  const rejectCustomer = async (customerId: number) => {
+    if (!confirm("Bạn có chắc muốn từ chối khách hàng này?")) return;
+    await customerApi.reject(customerId);
+    alert("Từ chối khách hàng thành công");
+    await fetchAdminCustomers(lastSearchAllRef.current);
+  };
+
+  const handleSearch = (params?: CustomerSearchDTO) => {
+    fetchAdminCustomers(params);
+  };
+
+  const [transactionTypes, setTransactionTypes] = useState<TransactionTypeDTO[]>([]);
+
+  useEffect(() => {
+    fetchAdminCustomers();
+    transactionTypeApi.getAll().then((res) => setTransactionTypes(res.data));
+  }, [fetchAdminCustomers]);
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="mx-auto max-w-7xl space-y-6">
-        {/* HEADER */}
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-semibold text-gray-800">
             Danh sách khách hàng
@@ -36,20 +65,25 @@ export default function AdminCustomerView() {
           </button>
         </div>
 
-        {/* FILTER */}
-        <CustomerFilter onSearch={fetchAllCustomers} />
+        <CustomerFilter
+          onSearch={handleSearch}
+          showApprovalStatus
+          transactionTypes={transactionTypes}
+          showStaffFilters
+        />
 
-        {/* TABLE */}
         <CustomerTable
           customers={allCustomers}
           permission={CUSTOMER_PERMISSIONS.ADMIN}
           onAssign={setAssignCustomerId}
           onEdit={(c) => setEditCustomerId(c.id)}
           onTransactions={setTransactionCustomerId}
+          onView={setViewCustomerId}
+          onApprove={approveCustomer}
+          onReject={rejectCustomer}
         />
       </div>
 
-      {/* MODALS */}
       <CustomerModalHub
         showCreate={showCreate}
         editCustomerId={editCustomerId}
@@ -60,8 +94,15 @@ export default function AdminCustomerView() {
         onCloseEdit={() => setEditCustomerId(null)}
         onCloseAssign={() => setAssignCustomerId(null)}
         onCloseTransaction={() => setTransactionCustomerId(null)}
-        onSuccess={fetchAllCustomers}
+        onSuccess={() => fetchAdminCustomers(lastSearchAllRef.current)}
       />
+
+      {viewCustomerId && (
+        <CustomerDetailModal
+          customerId={viewCustomerId}
+          onClose={() => setViewCustomerId(null)}
+        />
+      )}
     </div>
   );
 }
