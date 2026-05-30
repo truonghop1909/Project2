@@ -6,7 +6,7 @@ import UserFilter from "../components/UserFilter";
 import CreateUserModal from "../components/CreateUserModal";
 import { userApi } from "@/features/users/api/user.api";
 import { UserDTO } from "@/features/users/types/user";
-import { Pagination } from "@/shared/components/ui/Pagination";
+import { Pagination } from "@/components/common";
 
 export default function AdminUsersView() {
   const [allUsers, setAllUsers] = useState<UserDTO[]>([]);      // toàn bộ dữ liệu từ API

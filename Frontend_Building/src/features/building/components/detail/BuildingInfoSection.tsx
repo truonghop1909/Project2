@@ -1,8 +1,7 @@
-// src/features/building/components/detail/BuildingInfoSection.tsx
 
+import { InfoRow } from "@/components/common";
+import { Section } from "@/components/ui";
 import React from "react";
-import { Section } from "@/shared/components/ui";
-import { InfoRow } from "../shared/InfoRow";
 
 interface FieldConfig {
   label: string;
@@ -30,13 +29,11 @@ export const BuildingInfoSection: React.FC<BuildingInfoSectionProps> = ({
     3: "grid-cols-1 md:grid-cols-2 lg:grid-cols-3",
   };
 
-  // Tách fields fullWidth và normal
   const normalFields = fields.filter(f => !f.fullWidth);
   const fullWidthFields = fields.filter(f => f.fullWidth);
 
   return (
     <Section title={title} icon={icon}>
-      {/* Normal fields grid */}
       {normalFields.length > 0 && (
         <div className={`grid ${gridCols[columns]} gap-4 mb-4`}>
           {normalFields.map((field, index) => (
@@ -49,8 +46,6 @@ export const BuildingInfoSection: React.FC<BuildingInfoSectionProps> = ({
           ))}
         </div>
       )}
-      
-      {/* Full width fields */}
       {fullWidthFields.map((field, index) => (
         <div key={index} className="mt-2">
           <InfoRow

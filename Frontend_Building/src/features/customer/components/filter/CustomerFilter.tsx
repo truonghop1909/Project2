@@ -9,11 +9,13 @@ import {
 export default function CustomerFilter({
   onSearch,
   showApprovalStatus = false,
+  showTransactionType = false,   // ✅ mới
   transactionTypes = [],
   showStaffFilters = false,
 }: {
   onSearch: (params?: CustomerSearchDTO) => void;
   showApprovalStatus?: boolean;
+  showTransactionType?: boolean;   // ✅ mới
   transactionTypes?: TransactionTypeDTO[];
   showStaffFilters?: boolean;
 }) {
@@ -22,6 +24,7 @@ export default function CustomerFilter({
       <CustomerSearchForm
         onSearch={(p) => onSearch(p)}
         showApprovalStatus={showApprovalStatus}
+        showTransactionType={showTransactionType}
         transactionTypes={transactionTypes}
         showStaffFilters={showStaffFilters}
       />

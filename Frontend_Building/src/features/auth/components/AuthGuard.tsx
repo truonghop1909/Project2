@@ -24,7 +24,9 @@ export default function AuthGuard({ children, requiredRole }: AuthGuardProps) {
     }
   }, [user, loading, router, requiredRole]);
 
-  if (loading || !user) return null;
+  // Nếu đang load, render children (layout đã check server-side rồi)
+  if (loading) return <>{children}</>;
+  if (!user) return null;
   if (requiredRole && user.role !== requiredRole) return null;
 
   return <>{children}</>;

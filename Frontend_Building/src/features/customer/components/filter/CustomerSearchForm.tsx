@@ -9,11 +9,13 @@ import {
 export default function CustomerSearchForm({
   onSearch,
   showApprovalStatus = false,
+  showTransactionType = false,    // ✅ mới
   transactionTypes = [],
   showStaffFilters = false,
 }: {
   onSearch: (params: CustomerSearchDTO) => void;
   showApprovalStatus?: boolean;
+  showTransactionType?: boolean;   // ✅ mới
   transactionTypes?: TransactionTypeDTO[];
   showStaffFilters?: boolean;
 }) {
@@ -40,12 +42,11 @@ export default function CustomerSearchForm({
     }));
   };
 
-  const cols =
-    showApprovalStatus && showStaffFilters
-      ? "md:grid-cols-7"
-      : showApprovalStatus || showStaffFilters
-      ? "md:grid-cols-6"
-      : "md:grid-cols-4";
+  // Tính số cột dựa trên các flag
+  let cols = "md:grid-cols-2"; // baseline: fullname + phone
+  if (showTransactionType) cols = "md:grid-cols-3";
+  if (showApprovalStatus) cols = "md:grid-cols-4";
+  if (showStaffFilters) cols = "md:grid-cols-6";
 
   return (
     <div className="bg-white rounded-xl shadow-sm border p-5 space-y-4">
@@ -66,19 +67,21 @@ export default function CustomerSearchForm({
           placeholder="Số điện thoại"
         />
 
-        <select
-          name="transactionTypeId"
-          value={form.transactionTypeId ?? ""}
-          onChange={handleChange}
-          className={inputStyle}
-        >
-          <option value="">Loại giao dịch</option>
-          {transactionTypes.map((item) => (
-            <option key={item.id} value={item.id}>
-              {item.name}
-            </option>
-          ))}
-        </select>
+        {showTransactionType && (
+          <select
+            name="transactionTypeId"
+            value={form.transactionTypeId ?? ""}
+            onChange={handleChange}
+            className={inputStyle}
+          >
+            <option value="">Loại giao dịch</option>
+            {transactionTypes.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.name}
+              </option>
+            ))}
+          </select>
+        )}
 
         {showApprovalStatus && (
           <select

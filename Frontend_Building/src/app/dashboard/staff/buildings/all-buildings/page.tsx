@@ -8,7 +8,6 @@ import BuildingTable from "@/features/building/components/table/BuildingTable";
 import BuildingModalHub from "@/features/building/components/modal/BuildingModalHub";
 import BuildingDetailModal from "@/features/building/components/detail/BuildingDetailModal";
 import BuildingFilter from "@/features/building/components/search/BuildingFilter";
-import { Pagination } from "@/shared/components/ui/Pagination";
 import { BUILDING_PERMISSIONS } from "@/features/building/permissions";
 
 export default function AllBuildingsPage() {
