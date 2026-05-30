@@ -6,7 +6,6 @@ export { imageApi} from "./image.api";
 export type {
   Building,
   BuildingDetail,
-  BuildingSearch,
   BuildingSearchDTO,
   UserDTO,
   SubImage
