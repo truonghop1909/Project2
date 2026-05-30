@@ -1,3 +1,4 @@
+
 // types/building.type.ts
 export interface SubImage {
   id?: number;           // ID của ảnh (từ backend, có thể undefined khi chưa lưu)
@@ -29,39 +30,65 @@ export interface Building {
   address?: string;         // Computed field: street, wardName, provinceName
 }
 
-export interface BuildingSearch {
+/**
+ * BuildingSearchDTO - KHỚP HOÀN TOÀN VỚI BACKEND
+ * Copy từ BuildingSearchDTO.java
+ */
+export interface BuildingSearchDTO {
+  // ===== ID =====
+  id?: number;
+
   // ===== THÔNG TIN CƠ BẢN =====
   name?: string;
+  address?: string;
   street?: string;
-  
-  // ===== ĐỊA CHỈ MỚI (cho frontend) =====
-  provinceId?: string;      // Mã tỉnh
-  wardCode?: string;        // Mã phường/xã
-  
-  // ===== THÔNG SỐ KỸ THUẬT =====
+
+  // ===== ĐỊA CHỈ MỚI (SAU 07/2025) =====
+  provinceId?: string;
+  provinceName?: string;
+  wardCode?: string;
+  wardName?: string;
+
+  // ===== THÔNG TIN TÒA NHÀ =====
   numberOfBasement?: number;
-  floorAreaFrom?: number;
-  floorAreaTo?: number;
+  floorArea?: number;
   direction?: string;
   level?: string;
-  rentPriceFrom?: number;
-  rentPriceTo?: number;
-  rentAreaFrom?: number;
-  rentAreaTo?: number;
-  
-  // ===== LOẠI HÌNH THUÊ =====
-  rentTypes?: string[];
-  
-  // ===== NHÂN VIÊN =====
-  staffId?: number;
-  
-  // ===== PHÂN TRANG & SẮP XẾP =====
-  page?: number;
-  size?: number;
-  sortBy?: string;
-  sortDirection?: "ASC" | "DESC";
-}
 
+  // ===== GIÁ THUÊ & PHÍ =====
+  rentPrice?: number;
+  serviceFee?: number;
+  brokerageFee?: number;
+
+  // ===== QUẢN LÝ =====
+  managerName?: string;
+  managerPhone?: string;
+
+  // ===== HÌNH ẢNH =====
+  thumbnail?: string | null;
+
+  // ===== DIỆN TÍCH (DÙNG CHO TÌM KIẾM) =====
+  floorAreaFrom?: number | null;
+  floorAreaTo?: number | null;
+  rentAreaFrom?: number | null;
+  rentAreaTo?: number | null;
+
+  // ===== GIÁ THUÊ (DÙNG CHO TÌM KIẾM) =====
+  rentPriceFrom?: number | null;
+  rentPriceTo?: number | null;
+
+  // ===== QUẢN LÝ =====
+  staffId?: number | null;
+
+  // ===== LOẠI TÒA NHÀ =====
+  rentTypes?: string[] | null;
+
+  // ===== PAGINATION & SORT =====
+  page?: number | null;
+  size?: number | null;
+  sortBy?: string | null;
+  sortDirection?: string | null;
+}
 export interface BuildingDetail {
   id: number;
 
@@ -71,7 +98,7 @@ export interface BuildingDetail {
   provinceName?: string;
   wardCode: string;
   wardName?: string;
-  
+
   // ===== ĐỊA CHỈ CŨ (cho backward compatibility) =====
   districtId?: number;
   districtName?: string;
@@ -125,20 +152,6 @@ export interface UserDTO {
   fullname: string;
 }
 
-// DTO cho danh sách building (search results)
-export interface BuildingSearchDTO {
-  id: number;
-  name: string;
-  address: string;
-  floorArea: number;
-  rentPrice: number;
-  serviceFee: number;
-  managerName: string;
-  managerPhone: string;
-  brokerageFee: number;
-  rentArea: string | null;
-  thumbnail?: string;
-}
 
 // Enum cho loại hình thuê
 export enum RentType {

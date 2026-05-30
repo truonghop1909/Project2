@@ -22,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.javaweb.model.BuildingDetailDTO;
 import com.javaweb.model.BuildingSearchDTO;
+import com.javaweb.model.PageResponseDTO;
 import com.javaweb.model.UserDTO;
 import com.javaweb.repository.entity.UserEntity;
 import com.javaweb.service.BuildingService;
@@ -36,23 +37,22 @@ public class BuildingAPI {
     @Autowired
     private UserRepository userRepository;
 
-    // ==================== PUBLIC API (Không cần authentication) ====================
-    
+    // ==================== PUBLIC API (Không cần authentication)
+    // ====================
+
     /**
      * API công khai - Lấy danh sách tòa nhà cho trang chủ (không cần đăng nhập)
      */
     @GetMapping("/public/buildings")
-    public List<BuildingSearchDTO> getPublicBuildings(
+    public PageResponseDTO<BuildingSearchDTO> getPublicBuildings(
             @RequestParam Map<String, Object> params,
             @RequestParam(name = "typeCode", required = false) List<String> typeCode,
             @RequestParam(name = "page", defaultValue = "1") Integer page,
             @RequestParam(name = "size", defaultValue = "12") Integer size) {
-        
-        params.put("page", page);
-        params.put("size", size);
-        return buildingService.findAll(params, typeCode);
+
+        return buildingService.findAllWithPagination(params, typeCode, page, size);
     }
-    
+
     /**
      * API công khai - Lấy chi tiết tòa nhà cho khách hàng (không cần đăng nhập)
      */
@@ -61,8 +61,16 @@ public class BuildingAPI {
         return buildingService.findById(id);
     }
 
+    /**
+     * API công khai - Lấy danh sách ảnh của tòa nhà (không cần đăng nhập)
+     */
+    @GetMapping("/public/buildings/{id}/images")
+    public List<BuildingImageDTO> getPublicSubImages(@PathVariable Integer id) {
+        return buildingService.getSubImages(id);
+    }
+
     // ==================== AUTHENTICATED API (Cần đăng nhập) ====================
-    
+
     // ===== SEARCH LIST (cho admin/staff) =====
     @GetMapping("/building")
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
@@ -131,7 +139,7 @@ public class BuildingAPI {
     }
 
     // ==================== IMAGE API (Cần đăng nhập) ====================
-    
+
     // ===== UPLOAD IMAGE =====
     @PostMapping("/building/{id}/image")
     @PreAuthorize("hasRole('ADMIN')")

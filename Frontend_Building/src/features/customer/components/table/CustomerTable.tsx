@@ -26,6 +26,7 @@ export default function CustomerTable({
   onUnassign?: (customerId: number) => void;
   onApprove?: (customerId: number) => void;
   onReject?: (customerId: number) => void;
+  
 }) {
   return (
     <div className="overflow-x-auto rounded-lg border bg-white">
@@ -171,6 +172,7 @@ export default function CustomerTable({
             </tr>
           ))}
         </tbody>
+        
       </table>
 
       {customers.length === 0 && (
@@ -179,5 +181,6 @@ export default function CustomerTable({
         </div>
       )}
     </div>
+    
   );
 }

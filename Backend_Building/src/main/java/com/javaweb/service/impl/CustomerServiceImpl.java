@@ -166,9 +166,7 @@ public class CustomerServiceImpl implements CustomerService {
         CustomerEntity entity = customerRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Customer not found"));
 
-        if (SecurityUtils.hasRole(UserRole.STAFF)) {
-
-            // chỉ cần đã APPROVED là xem được
+        if (SecurityUtils.hasRole("ROLE_" + UserRole.STAFF)) {
             validateCustomerApproved(entity);
         }
 

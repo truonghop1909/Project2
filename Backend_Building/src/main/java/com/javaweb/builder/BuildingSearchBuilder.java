@@ -37,6 +37,9 @@ public class BuildingSearchBuilder {
     // ========== LOẠI HÌNH THUÊ ==========
     private List<String> rentTypes;
     
+    // ========== HÌNH ẢNH ==========
+    private String thumbnail;  // ← THÊM DÒNG NÀY
+    
     // ========== PAGINATION & SORT ==========
     private Integer page;
     private Integer size;
@@ -82,6 +85,9 @@ public class BuildingSearchBuilder {
         // Loại hình thuê
         this.rentTypes = builder.rentTypes;
         
+        // Hình ảnh
+        this.thumbnail = builder.thumbnail;  // ← THÊM DÒNG NÀY
+        
         // Pagination & Sort
         this.page = builder.page;
         this.size = builder.size;
@@ -91,9 +97,6 @@ public class BuildingSearchBuilder {
     
     // ========== HELPER METHODS ==========
     
-    /**
-     * Kiểm tra xem có dùng địa chỉ mới để tìm kiếm không
-     */
     public boolean isUsingNewAddress() {
         return (provinceId != null && !provinceId.isEmpty()) 
             || (wardCode != null && !wardCode.isEmpty())
@@ -101,10 +104,6 @@ public class BuildingSearchBuilder {
             || (wardName != null && !wardName.isEmpty());
     }
     
-    
-    /**
-     * Lấy giá trị offset cho pagination
-     */
     public Integer getOffset() {
         if (page == null || size == null || page < 1 || size < 1) {
             return null;
@@ -112,9 +111,6 @@ public class BuildingSearchBuilder {
         return (page - 1) * size;
     }
     
-    /**
-     * Kiểm tra có pagination không
-     */
     public boolean hasPagination() {
         return page != null && size != null && size > 0;
     }
@@ -257,6 +253,15 @@ public class BuildingSearchBuilder {
         this.wardName = wardName;
     }
     
+    // ========== GETTER & SETTER CHO THUMBNAIL ==========
+    public String getThumbnail() {
+        return thumbnail;
+    }
+    
+    public void setThumbnail(String thumbnail) {
+        this.thumbnail = thumbnail;
+    }
+    
     public Integer getPage() {
         return page;
     }
@@ -329,6 +334,9 @@ public class BuildingSearchBuilder {
         // Loại hình thuê
         private List<String> rentTypes;
         
+        // Hình ảnh
+        private String thumbnail;  // ← THÊM DÒNG NÀY
+        
         // Pagination & Sort
         private Integer page;
         private Integer size;
@@ -349,7 +357,6 @@ public class BuildingSearchBuilder {
             this.numberOfBasement = numberOfBasement;
             return this;
         }
-        
         
         public Builder provinceId(String provinceId) {
             this.provinceId = provinceId;
@@ -421,6 +428,12 @@ public class BuildingSearchBuilder {
             return this;
         }
         
+        // ========== THÊM BUILDER CHO THUMBNAIL ==========
+        public Builder thumbnail(String thumbnail) {
+            this.thumbnail = thumbnail;
+            return this;
+        }
+        
         public Builder page(Integer page) {
             this.page = page;
             return this;
@@ -468,6 +481,7 @@ public class BuildingSearchBuilder {
                 ", rentPriceTo=" + rentPriceTo +
                 ", staffId=" + staffId +
                 ", rentTypes=" + rentTypes +
+                ", thumbnail='" + thumbnail + '\'' +
                 ", page=" + page +
                 ", size=" + size +
                 ", sortBy='" + sortBy + '\'' +

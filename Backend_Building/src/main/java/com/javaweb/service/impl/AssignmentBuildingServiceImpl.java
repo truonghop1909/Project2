@@ -7,11 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.javaweb.builder.BuildingSearchBuilder;
 import com.javaweb.constant.UserRole;
 import com.javaweb.converter.AssignmentBuildingConverter;
 import com.javaweb.model.AssignmentBuildingDTO;
-import com.javaweb.model.BuildingSearchDTO;
 import com.javaweb.model.StaffAssignmentDTO;
 import com.javaweb.repository.AssignmentBuildingRepository;
 import com.javaweb.repository.BuildingRepository;
@@ -38,7 +36,8 @@ public class AssignmentBuildingServiceImpl implements AssignmentBuildingService 
     @Override
     public List<StaffAssignmentDTO> loadStaff(Integer buildingId) {
 
-        List<UserEntity> staffs = userRepository.findByStatusAndRoles_Code(1, UserRole.STAFF);
+        String roleCode = "ROLE_" + UserRole.STAFF;
+        List<UserEntity> staffs = userRepository.findByStatusAndRoles_Code(1, roleCode);
 
         List<Integer> assignedStaffIds = assignmentRepo.findStaffIdsByBuildingId(buildingId);
 
@@ -59,8 +58,6 @@ public class AssignmentBuildingServiceImpl implements AssignmentBuildingService 
                     converter.toEntity(dto.getBuildingId(), staffId));
         }
     }
-
-    
 
     @Override
     @Transactional
@@ -89,4 +86,3 @@ public class AssignmentBuildingServiceImpl implements AssignmentBuildingService 
         assignmentRepo.deleteByBuildingIdAndStaffId(buildingId, staffId);
     }
 }
-

@@ -3,7 +3,11 @@ package com.javaweb.api.auth;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -48,16 +52,16 @@ public class AuthAPI {
         user.setStatus(1);
 
         // ⭐ KIỂM TRA ROLE CÓ TỒN TẠI KHÔNG
-        RoleEntity roleUser = roleRepository.findByCode("ROLE_USER");
-        if (roleUser == null) {
-            // Nếu chưa có role USER thì tạo mới
-            roleUser = new RoleEntity();
-            roleUser.setCode("ROLE_USER");
-            roleUser.setName("User Role");
-            roleRepository.save(roleUser);
+        RoleEntity roleStaff = roleRepository.findByCode("ROLE_STAFF");
+        if (roleStaff == null) {
+            // Nếu chưa có role STAFF thì tạo mới
+            roleStaff = new RoleEntity();
+            roleStaff.setCode("ROLE_STAFF");
+            roleStaff.setName("Staff Role");
+            roleRepository.save(roleStaff);
         }
 
-        user.getRoles().add(roleUser);
+        user.getRoles().add(roleStaff);
         userRepository.save(user);
 
         return ResponseEntity.ok("Register success");
@@ -66,6 +70,7 @@ public class AuthAPI {
     // ================= LOGIN =================
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequestDTO request) {
+
         try {
             if (request == null || request.getUsername() == null || request.getPassword() == null) {
                 return ResponseEntity.badRequest().body("Username and password are required");
@@ -112,5 +117,17 @@ public class AuthAPI {
             ex.printStackTrace();
             return ResponseEntity.status(500).body("Internal server error: " + ex.getMessage());
         }
+    }
+
+    @PostMapping("/logout")
+    // @PreAuthorize("isAuthenticated()") // Không cần nữa
+    public ResponseEntity<?> logout(HttpServletRequest request) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getName() != null) {
+            System.out.println("🔐 LOGOUT: " + auth.getName());
+        }
+        SecurityContextHolder.clearContext();
+        // Nếu có blacklist token thì thêm token vào đây
+        return ResponseEntity.ok("Logout successful");
     }
 }

@@ -1,6 +1,6 @@
-// app/dashboard/admin/layout.tsx
 import Sidebar from "../components/Sidebar";
 import AuthGuard from "@/features/auth/components/AuthGuard";
+import { ROLE } from "@/features/auth/types/role";
 
 export default function AdminLayout({
   children,
@@ -8,17 +8,15 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <AuthGuard requiredRole="">
+    <AuthGuard requiredRole={ROLE.ADMIN}>
       <div className="flex min-h-screen w-full">
-        <Sidebar roles={[""]} />
-
+        <Sidebar roles={["ADMIN"]} />
         <main className="flex-1 bg-gray-50">
           <div className="w-full p-6">
             {children}
           </div>
         </main>
       </div>
-
     </AuthGuard>
   );
 }

@@ -5,74 +5,71 @@ import java.util.List;
 public class BuildingSearchDTO {
     
     // ===== ID =====
-    private Integer id;  // THÊM FIELD NÀY
+    private Integer id;
     
     // ===== THÔNG TIN CƠ BẢN =====
-    private String name;               // Tên tòa nhà (like)
-    private String address;            // Địa chỉ hiển thị (THÊM FIELD NÀY)
+    private String name;
+    private String address;
     
-    private String street;             // Đường/Số nhà
+    private String street;
     
     // ===== ĐỊA CHỈ MỚI (SAU 07/2025) =====
-    private String provinceId;         // Mã tỉnh (VD: "01")
-    private String provinceName;       // Tên tỉnh (VD: "Thành phố Hà Nội")
-    private String wardCode;           // Mã xã/phường mới (VD: "00070")
-    private String wardName;           // Tên xã/phường mới (VD: "Phường Hoàn Kiếm")
+    private String provinceId;
+    private String provinceName;
+    private String wardCode;
+    private String wardName;
     
     // ===== THÔNG TIN TÒA NHÀ =====
-    private Integer numberOfBasement;  // Số tầng hầm
-    private Double floorArea;          // Diện tích sàn (THÊM FIELD NÀY)
-    private String direction;          // Hướng
-    private String level;              // Hạng
+    private Integer numberOfBasement;
+    private Double floorArea;
+    private String direction;
+    private String level;
     
     // ===== GIÁ THUÊ & PHÍ =====
-    private Double rentPrice;          // Giá thuê (THÊM FIELD NÀY)
-    private Double serviceFee;         // Phí dịch vụ (THÊM FIELD NÀY)
-    private Double brokerageFee;       // Hoa hồng (THÊM FIELD NÀY)
+    private Double rentPrice;
+    private Double serviceFee;
+    private Double brokerageFee;
     
     // ===== QUẢN LÝ =====
-    private String managerName;        // Tên quản lý (THÊM FIELD NÀY)
-    private String managerPhone;       // SĐT quản lý (THÊM FIELD NÀY)
+    private String managerName;
+    private String managerPhone;
+    
+    // ===== HÌNH ẢNH =====
+    private String thumbnail;  // ← THÊM DÒNG NÀY
     
     // ===== DIỆN TÍCH (DÙNG CHO TÌM KIẾM) =====
-    private Double floorAreaFrom;      // Diện tích sàn từ
-    private Double floorAreaTo;        // Diện tích sàn đến
+    private Double floorAreaFrom;
+    private Double floorAreaTo;
     
-    private Double rentAreaFrom;       // Diện tích cho thuê từ
-    private Double rentAreaTo;         // Diện tích cho thuê đến
+    private Double rentAreaFrom;
+    private Double rentAreaTo;
     
     // ===== GIÁ THUÊ (DÙNG CHO TÌM KIẾM) =====
-    private Double rentPriceFrom;      // Giá thuê từ
-    private Double rentPriceTo;        // Giá thuê đến
+    private Double rentPriceFrom;
+    private Double rentPriceTo;
     
     // ===== QUẢN LÝ =====
-    private Integer staffId;           // ID nhân viên phụ trách
+    private Integer staffId;
     
     // ===== LOẠI TÒA NHÀ =====
-    private List<String> rentTypes;    // Các loại hình cho thuê (office, retail, etc.)
+    private List<String> rentTypes;
     
     // ===== PAGINATION & SORT =====
-    private Integer page;              // Trang hiện tại (mặc định: 0)
-    private Integer size;              // Số lượng bản ghi trên 1 trang (mặc định: 10)
-    private String sortBy;             // Trường cần sort (VD: "name", "rentPrice")
-    private String sortDirection;      // Hướng sort: "ASC" hoặc "DESC" (mặc định: "ASC")
+    private Integer page;
+    private Integer size;
+    private String sortBy;
+    private String sortDirection;
     
     // ===== CONSTRUCTORS =====
     public BuildingSearchDTO() {}
     
     // ===== HELPER METHODS =====
     
-    /**
-     * Kiểm tra xem có dùng địa chỉ mới để tìm kiếm không
-     */
     public boolean isUsingNewAddress() {
         return (provinceId != null && !provinceId.isEmpty()) 
             || (wardCode != null && !wardCode.isEmpty());
     }
     
-    /**
-     * Lấy giá trị offset cho pagination
-     */
     public Integer getOffset() {
         if (page == null || size == null) {
             return null;
@@ -80,9 +77,6 @@ public class BuildingSearchDTO {
         return (page - 1) * size;
     }
     
-    /**
-     * Kiểm tra có pagination không
-     */
     public boolean hasPagination() {
         return page != null && size != null && size > 0;
     }
@@ -121,7 +115,6 @@ public class BuildingSearchDTO {
         this.street = street;
     }
     
-    // Địa chỉ mới
     public String getProvinceId() {
         return provinceId;
     }
@@ -224,6 +217,15 @@ public class BuildingSearchDTO {
     
     public void setManagerPhone(String managerPhone) {
         this.managerPhone = managerPhone;
+    }
+    
+    // ===== GETTER & SETTER CHO THUMBNAIL =====
+    public String getThumbnail() {
+        return thumbnail;
+    }
+    
+    public void setThumbnail(String thumbnail) {
+        this.thumbnail = thumbnail;
     }
     
     // === CÁC FIELD DÙNG CHO TÌM KIẾM ===
@@ -345,6 +347,7 @@ public class BuildingSearchDTO {
                 ", brokerageFee=" + brokerageFee +
                 ", managerName='" + managerName + '\'' +
                 ", managerPhone='" + managerPhone + '\'' +
+                ", thumbnail='" + thumbnail + '\'' +
                 '}';
     }
 }

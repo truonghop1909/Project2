@@ -3,19 +3,20 @@
 import { axiosClient } from "@/shared/services/axiosClient";
 import {
   BuildingDetail,
-  BuildingSearch,
   BuildingSearchDTO,
   UserDTO
 } from "../types/building.type";
+import { PageResponse } from "@/shared/types/pagination.type";
 
 export const buildingApi = {
   // ==================== PUBLIC APIS (Không cần token) ====================
-  
+
   /**
    * Lấy danh sách tòa nhà công khai (cho trang chủ)
    */
-  getPublicBuildings: (params?: BuildingSearch) =>
-    axiosClient.get<BuildingSearchDTO[]>("/public/buildings", { params }),
+  getPublicBuildings: (params?: BuildingSearchDTO) => {
+    return axiosClient.get<PageResponse<BuildingSearchDTO>>("/public/buildings", { params });
+  },
 
   /**
    * Lấy chi tiết tòa nhà công khai (cho khách hàng)
@@ -28,7 +29,7 @@ export const buildingApi = {
   /**
    * Lấy danh sách tòa nhà theo điều kiện tìm kiếm (cho admin/staff)
    */
-  getAll: (params?: BuildingSearch) =>
+  getAll: (params?: BuildingSearchDTO) =>
     axiosClient.get<BuildingSearchDTO[]>("/building", { params }),
 
   /**
@@ -58,7 +59,7 @@ export const buildingApi = {
   /**
    * Lấy danh sách tòa nhà của nhân viên hiện tại
    */
-  getMyBuildings: (params?: BuildingSearch) =>
+  getMyBuildings: (params?: BuildingSearchDTO) =>
     axiosClient.get<BuildingSearchDTO[]>("/building/my-building", { params }),
 
   // ==================== STAFF ASSIGNMENT ====================

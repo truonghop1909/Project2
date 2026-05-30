@@ -22,6 +22,7 @@ import com.javaweb.converter.BuildingSearchBuilderConverter;
 import com.javaweb.model.BuildingDetailDTO;
 import com.javaweb.model.BuildingImageDTO;
 import com.javaweb.model.BuildingSearchDTO;
+import com.javaweb.model.PageResponseDTO;
 import com.javaweb.model.UserDTO;
 import com.javaweb.repository.BuildingImageRepository;
 import com.javaweb.repository.BuildingRentTypeRepository;
@@ -70,7 +71,7 @@ public class BuildingServiceImpl implements BuildingService {
     private BuildingEntityConverter buildingEntityConverter;
 
     // ================= EXISTING METHODS =================
-    
+
     @Override
     @Transactional
     public Integer createBuilding(BuildingDetailDTO dto) {
@@ -248,11 +249,11 @@ public class BuildingServiceImpl implements BuildingService {
     }
 
     // ================= NEW METHODS FOR PUBLIC API =================
-    
+
     @Override
     public List<BuildingImageDTO> getSubImages(Integer buildingId) {
         List<BuildingImageEntity> images = buildingImageRepository.findByBuilding_Id(buildingId);
-        
+
         return images.stream()
                 .map(entity -> {
                     BuildingImageDTO dto = new BuildingImageDTO();
@@ -267,16 +268,17 @@ public class BuildingServiceImpl implements BuildingService {
     }
 
     @Override
-    public List<BuildingSearchDTO> getPublicBuildings(Map<String, Object> params, List<String> typeCode, Integer page, Integer size) {
+    public List<BuildingSearchDTO> getPublicBuildings(Map<String, Object> params, List<String> typeCode, Integer page,
+            Integer size) {
         // Thêm phân trang vào params
         params.put("page", page);
         params.put("size", size);
-        
+
         BuildingSearchBuilder builder = buildingSearchBuilderConverter.toBuildingSearchBuilder(params, typeCode);
-        
+
         // Nếu repository hỗ trợ phân trang, bạn có thể sử dụng Pageable
         // return buildingRepository.findAll(builder, PageRequest.of(page - 1, size));
-        
+
         return buildingRepository.findAll(builder);
     }
 
@@ -284,13 +286,43 @@ public class BuildingServiceImpl implements BuildingService {
     public BuildingDetailDTO getPublicBuildingById(Integer id) {
         BuildingEntity entity = buildingRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Building not found"));
-        
+
         BuildingDetailDTO dto = buildingDetailDTOConverter.toBuildingDetailDTO(entity);
-        
+
         // Load thêm images nếu cần
         List<BuildingImageDTO> images = getSubImages(id);
         dto.setImages(images);
-        
+
         return dto;
+    }
+
+    @Override
+    public PageResponseDTO<BuildingSearchDTO> findAllWithPagination(
+            Map<String, Object> params,
+            List<String> typeCode,
+            int page,
+            int size) {
+
+        // Đảm bảo page và size hợp lệ
+        if (page < 1)
+            page = 1;
+        if (size < 1)
+            size = 10;
+
+        // Set page và size vào params
+        params.put("page", page);
+        params.put("size", size);
+
+        // Tạo builder từ params
+        BuildingSearchBuilder builder = buildingSearchBuilderConverter.toBuildingSearchBuilder(params, typeCode);
+
+        // Lấy danh sách dữ liệu cho trang hiện tại
+        List<BuildingSearchDTO> content = buildingRepository.findAll(builder);
+
+        // Lấy tổng số bản ghi
+        long totalElements = buildingRepository.count(builder);
+
+        // Trả về response phân trang
+        return new PageResponseDTO<>(content, page, size, totalElements);
     }
 }

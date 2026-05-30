@@ -1,67 +1,31 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useAuth } from "../context/AuthContext";
 import { useRouter } from "next/navigation";
-import { jwtDecode } from "jwt-decode";
+import { useEffect } from "react";
+import { Role } from "../types/role";
 
-type Role = "ADMIN" | "STAFF" | "USER";
-
-interface Props {
+interface AuthGuardProps {
   children: React.ReactNode;
-  requiredRole?: Role;
+  requiredRole?: Role; // sử dụng type Role
 }
 
-interface JwtPayload {
-  roles?: string[] | string;
-  authorities?: string[] | string;
-  exp?: number;
-}
-
-export default function AuthGuard({ children, requiredRole }: Props) {
+export default function AuthGuard({ children, requiredRole }: AuthGuardProps) {
+  const { user, loading } = useAuth();
   const router = useRouter();
-  const [authorized, setAuthorized] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      router.replace("/login");
-      return;
-    }
-
-    try {
-      const decoded = jwtDecode<JwtPayload>(token);
-
-      // Check hết hạn
-      if (decoded.exp && decoded.exp * 1000 < Date.now()) {
-        localStorage.removeItem("token");
+    if (!loading) {
+      if (!user) {
         router.replace("/login");
-        return;
+      } else if (requiredRole && user.role !== requiredRole) {
+        router.replace("/403");
       }
-
-      const rawRoles = decoded.roles ?? decoded.authorities ?? [];
-      const roles = Array.isArray(rawRoles) ? rawRoles : [rawRoles];
-
-      // Nếu có yêu cầu role, kiểm tra (hỗ trợ cả "STAFF" và "ROLE_STAFF")
-      if (requiredRole) {
-        const hasRequiredRole = roles.some(
-          (role) => role === requiredRole || role === `ROLE_${requiredRole}`
-        );
-        
-        if (!hasRequiredRole) {
-          router.replace("/403");
-          return;
-        }
-      }
-
-      setAuthorized(true);
-    } catch {
-      localStorage.removeItem("token");
-      router.replace("/login");
     }
-  }, [router, requiredRole]);
+  }, [user, loading, router, requiredRole]);
 
-  if (!authorized) return null;
+  if (loading || !user) return null;
+  if (requiredRole && user.role !== requiredRole) return null;
 
   return <>{children}</>;
 }

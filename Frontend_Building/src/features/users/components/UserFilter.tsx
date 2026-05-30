@@ -27,8 +27,8 @@ export default function UserFilter({ onSearch }: any) {
           onChange={(e) => setRole(e.target.value)}
         >
           <option value="">Tất cả quyền</option>
-          <option value="ADMIN">ADMIN</option>
-          <option value="STAFF">STAFF</option>
+          <option value="ROLE_ADMIN">ADMIN</option>
+          <option value="ROLE_STAFF">STAFF</option>
         </select>
 
         {/* Status */}

@@ -1,59 +1,31 @@
-// D:\HocBai\LapTrinh\Building\Frontend_Building\middleware.ts
-
+// middleware.ts (giữ nguyên như bạn đã viết, chỉ sửa publicRoutes)
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-// Public routes không cần đăng nhập
-const publicRoutes = [
-  '/',
-  '/login',
-  '/register',
-];
-
-// API public routes (không cần token)
-const publicApiRoutes = [
-  '/api/public',
-  '/api/auth',
-];
+const publicRoutes = ['/', '/login', '/register', '/buildings']; // thêm /buildings
+const publicApiRoutes = ['/api/public', '/api/auth'];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get('token')?.value;
-  
-  // Kiểm tra nếu là API public
+
+  const isPublicRoute = publicRoutes.some(route => pathname === route || pathname.startsWith(route + '/'));
   const isPublicApi = publicApiRoutes.some(route => pathname.startsWith(route));
-  
-  // Kiểm tra nếu là public route
-  const isPublicRoute = publicRoutes.includes(pathname);
-  
-  // Cho phép public routes và public API
-  if (isPublicRoute || isPublicApi) {
+  const isStatic = pathname.startsWith('/_next') || pathname.includes('.');
+
+  if (isPublicRoute || isPublicApi || isStatic) {
     return NextResponse.next();
   }
-  
-  // Cho phép static files (Next.js internal)
-  if (pathname.startsWith('/_next') || pathname.includes('.')) {
-    return NextResponse.next();
-  }
-  
-  // Nếu không có token, redirect về login
+
   if (!token) {
     const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('redirect', pathname);
     return NextResponse.redirect(loginUrl);
   }
-  
+
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     */
-    '/((?!_next/static|_next/image|favicon.ico).*)',
-  ],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
 };

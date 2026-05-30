@@ -1,0 +1,36 @@
+import { useState } from "react";
+import { userApi } from "../api/user.api";  // ✅ thêm dòng import này
+
+interface CreateUserPayload {
+  username: string;
+  password: string;
+  fullname: string;
+  email: string;
+  phone: string;
+  roleCodes: string[];
+}
+
+export function useCreateUser() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+
+  const createUser = async (payload: CreateUserPayload) => {
+    setLoading(true);
+    setError(null);
+    setSuccess(false);
+    try {
+      await userApi.createUser(payload);
+      setSuccess(true);
+      return true;
+    } catch (err: any) {
+      const message = err.response?.data?.message || "Tạo thất bại";
+      setError(message);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { createUser, loading, error, success };
+}

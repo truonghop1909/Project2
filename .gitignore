@@ -8,3 +8,17 @@ target/
 
 # ===== Logs =====
 *.log
+
+docker-uploads/
+*.jpg
+*.png
+*.jpeg
+
+# Frontend_Building (Next.js)
+Frontend_Building/node_modules/
+Frontend_Building/.next/
+Frontend_Building/out/
+Frontend_Building/.env
+Frontend_Building/.env.local
+Frontend_Building/.env.*.local
+Frontend_Building/.vercel

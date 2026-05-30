@@ -24,17 +24,6 @@ public class DataLoader implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         
-        // ========== Tạo ROLES ==========
-        // Tạo role USER
-        RoleEntity userRole = roleRepository.findByCode("ROLE_USER");
-        if (userRole == null) {
-            userRole = new RoleEntity();
-            userRole.setCode("ROLE_USER");
-            userRole.setName("User Role");
-            roleRepository.save(userRole);
-            System.out.println("✅ Created ROLE_USER");
-        }
-        
         // Tạo role STAFF
         RoleEntity staffRole = roleRepository.findByCode("ROLE_STAFF");
         if (staffRole == null) {
@@ -65,7 +54,6 @@ public class DataLoader implements CommandLineRunner {
             admin.setStatus(1);
             admin.getRoles().add(adminRole); // Gán role ADMIN
             admin.getRoles().add(staffRole); // Có thể gán thêm STAFF nếu muốn
-            admin.getRoles().add(userRole);  // Có thể gán thêm USER nếu muốn
             
             userRepository.save(admin);
             System.out.println("✅ Created ADMIN user: username=admin, password=admin123");
@@ -81,23 +69,9 @@ public class DataLoader implements CommandLineRunner {
             staff.setPassword(passwordEncoder.encode("staff123"));
             staff.setStatus(1);
             staff.getRoles().add(staffRole);
-            staff.getRoles().add(userRole);
             
             userRepository.save(staff);
             System.out.println("✅ Created STAFF user: username=staff1, password=staff123");
-        }
-        
-        // ========== (Tuỳ chọn) Tạo USER demo ==========
-        UserEntity existingUser = userRepository.findByUsername("user1");
-        if (existingUser == null) {
-            UserEntity user = new UserEntity();
-            user.setUsername("user1");
-            user.setPassword(passwordEncoder.encode("user123"));
-            user.setStatus(1);
-            user.getRoles().add(userRole);
-            
-            userRepository.save(user);
-            System.out.println("✅ Created USER user: username=user1, password=user123");
         }
     }
 }

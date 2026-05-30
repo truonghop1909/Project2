@@ -9,6 +9,7 @@ import com.javaweb.builder.BuildingSearchBuilder;
 import com.javaweb.model.BuildingDetailDTO;
 import com.javaweb.model.BuildingImageDTO;
 import com.javaweb.model.BuildingSearchDTO;
+import com.javaweb.model.PageResponseDTO;
 import com.javaweb.model.UserDTO;
 
 public interface BuildingService {
@@ -47,4 +48,12 @@ public interface BuildingService {
     
     /** Lấy chi tiết tòa nhà công khai */
     BuildingDetailDTO getPublicBuildingById(Integer id);
+
+    // THÊM METHOD MỚI TRẢ VỀ PHÂN TRANG
+    PageResponseDTO<BuildingSearchDTO> findAllWithPagination(
+        Map<String, Object> params, 
+        List<String> typeCode, 
+        int page, 
+        int size
+    );
 }

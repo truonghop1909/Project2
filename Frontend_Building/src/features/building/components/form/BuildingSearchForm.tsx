@@ -1,17 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { BuildingSearch } from "../../types/building.type";
+import { BuildingSearchDTO } from "../../types/building.type";
 import { Province, Ward } from "../../types/address.type";  
 import { addressApi } from "../../api/Address.api";
 
 
 interface Props {
-  onSearch: (params: BuildingSearch) => void;
+  onSearch: (params: BuildingSearchDTO) => void;
 }
 
 export default function BuildingSearchForm({ onSearch }: Props) {
-  const [form, setForm] = useState<Partial<BuildingSearch>>({});
+  const [form, setForm] = useState<Partial<BuildingSearchDTO>>({});
   const [provinces, setProvinces] = useState<Province[]>([]);
   const [wards, setWards] = useState<Ward[]>([]);
   const [loadingProvinces, setLoadingProvinces] = useState(false);
@@ -66,7 +66,7 @@ export default function BuildingSearchForm({ onSearch }: Props) {
       Object.entries(form).filter(([_, value]) => 
         value !== undefined && value !== "" && value !== null
       )
-    ) as BuildingSearch;
+    ) as BuildingSearchDTO;
     
     onSearch(searchParams);
   };

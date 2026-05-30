@@ -70,11 +70,13 @@ public class UserServiceImpl implements UserService {
 
         if (dto.getRoleCodes() == null || dto.getRoleCodes().isEmpty()) {
             // REGISTER → mặc định STAFF
-            roles.add(roleRepository.findByCode(UserRole.STAFF));
+            roles.add(roleRepository.findByCode("ROLE_" + UserRole.STAFF));
         } else {
             // ADMIN tạo user
             for (String roleCode : dto.getRoleCodes()) {
-                RoleEntity role = roleRepository.findByCode(roleCode);
+                // Nếu roleCode từ client chưa có prefix, thêm vào (tuỳ logic)
+                String fullCode = roleCode.startsWith("ROLE_") ? roleCode : "ROLE_" + roleCode;
+                RoleEntity role = roleRepository.findByCode(fullCode);
                 if (role != null) {
                     roles.add(role);
                 }
@@ -202,8 +204,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserDTO> getActiveStaff() {
-        List<UserEntity> entities = userRepository.findByStatusAndRoles_Code(1, UserRole.STAFF);
-
+        String roleCode = "ROLE_" + UserRole.STAFF; // "ROLE_STAFF"
+        List<UserEntity> entities = userRepository.findByStatusAndRoles_Code(1, roleCode);
+        System.out.println("Role code dùng để query: " + roleCode); // để kiểm tra
         return entities.stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());

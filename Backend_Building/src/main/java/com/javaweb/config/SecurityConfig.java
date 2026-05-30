@@ -47,9 +47,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public void configure(WebSecurity web) throws Exception {
         web.httpFirewall(getHttpFirewall());
         web.ignoring().antMatchers(
-            "/uploads/**",
-            "/static/**",
-            "/public/**"  // Cho phép public routes
+                "/uploads/**",
+                "/static/**",
+                "/public/**" // Cho phép public routes
         );
     }
 
@@ -64,10 +64,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 // Public routes - không cần authentication
                 .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                .antMatchers("/api/auth/**").permitAll()
-                .antMatchers("/api/public/**").permitAll()  // Cho phép tất cả API public
+                // Chỉ cho phép login, register public, còn logout yêu cầu authenticated
+                .antMatchers("/api/auth/login", "/api/auth/register").permitAll()
+                .antMatchers("/api/public/**").permitAll()
                 .antMatchers("/uploads/**").permitAll()
-                // Authenticated routes
+                // Logout yêu cầu đã đăng nhập
+                .antMatchers("/api/auth/logout").authenticated()
+                // Các API khác
                 .antMatchers("/api/building/**").authenticated()
                 .antMatchers("/api/admin/**").hasRole(UserRole.ADMIN)
                 .anyRequest().authenticated()
@@ -93,7 +96,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         configuration.addExposedHeader("Authorization");
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
-        
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;

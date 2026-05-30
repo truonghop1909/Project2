@@ -49,6 +49,9 @@ public class BuildingSearchBuilderConverter {
         // ========== LOẠI HÌNH THUÊ ==========
         builder.rentTypes(rentTypes);
         
+        // ========== HÌNH ẢNH ==========
+        builder.thumbnail(MapUtil.getObject(params, "thumbnail", String.class));  // ← THÊM DÒNG NÀY
+        
         // ========== PAGINATION & SORT ==========
         builder.page(MapUtil.getObject(params, "page", Integer.class));
         builder.size(MapUtil.getObject(params, "size", Integer.class));

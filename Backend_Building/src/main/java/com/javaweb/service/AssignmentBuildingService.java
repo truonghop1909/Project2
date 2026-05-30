@@ -3,7 +3,6 @@ package com.javaweb.service;
 import java.util.List;
 
 import com.javaweb.model.AssignmentBuildingDTO;
-import com.javaweb.model.BuildingSearchDTO;
 import com.javaweb.model.StaffAssignmentDTO;
 
 public interface AssignmentBuildingService {

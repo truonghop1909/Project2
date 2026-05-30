@@ -1,6 +1,6 @@
 package com.javaweb.service.impl;
 
-import java.util.Arrays;  // 👈 Thêm import này
+import java.util.Arrays; // 👈 Thêm import này
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,8 +43,7 @@ public class AssignmentCustomerServiceImpl implements AssignmentCustomerService 
     private boolean isCustomerApproved(Integer customerId) {
         return customerRepository.existsByIdAndApprovalStatus(
                 customerId,
-                CustomerApprovalStatus.APPROVED
-        );
+                CustomerApprovalStatus.APPROVED);
     }
 
     private void validateCustomerApproved(Integer customerId) {
@@ -77,16 +76,14 @@ public class AssignmentCustomerServiceImpl implements AssignmentCustomerService 
         // 👇 Đã sửa: dùng Arrays.asList thay vì List.of
         List<UserEntity> users = userRepository.findDistinctByStatusAndRoles_CodeIn(
                 1,
-                Arrays.asList(UserRole.STAFF, UserRole.ADMIN)
-        );
+                Arrays.asList("ROLE_" + UserRole.STAFF, "ROLE_" + UserRole.ADMIN));
 
         List<Integer> assignedStaffIds = assignmentRepo.findStaffIdsByCustomerId(customerId);
 
         return users.stream()
                 .map(user -> converter.toStaffAssignmentDTO(
                         user,
-                        assignedStaffIds.contains(user.getId())
-                ))
+                        assignedStaffIds.contains(user.getId())))
                 .collect(Collectors.toList());
     }
 
@@ -96,25 +93,25 @@ public class AssignmentCustomerServiceImpl implements AssignmentCustomerService 
         if (dto == null) {
             throw new FieldRequiredException("DTO không được để trống");
         }
-        
+
         validateRequiredFields(dto.getCustomerId(), "assign customer");
         validateCustomerApproved(dto.getCustomerId());
-        
+
         CustomerEntity customer = validateAndGetCustomer(dto.getCustomerId());
-        
+
         assignmentRepo.deleteByCustomerId(dto.getCustomerId());
-        
+
         if (dto.getStaffIds() == null || dto.getStaffIds().isEmpty()) {
             return;
         }
-        
+
         for (Integer staffId : dto.getStaffIds()) {
             UserEntity staff = validateAndGetUser(staffId);
-            
+
             AssignmentCustomerEntity assignment = new AssignmentCustomerEntity();
             assignment.setCustomer(customer);
             assignment.setStaff(staff);
-            
+
             assignmentRepo.save(assignment);
         }
     }
@@ -124,24 +121,24 @@ public class AssignmentCustomerServiceImpl implements AssignmentCustomerService 
     public void assignCurrentStaff(Integer customerId) {
         validateRequiredFields(customerId, "nhận customer");
         validateCustomerApproved(customerId);
-        
+
         Integer staffId = SecurityUtils.getCurrentUserId();
         if (staffId == null) {
             throw new BuildingAssignedException("Không thể xác định user hiện tại");
         }
-        
+
         boolean alreadyAssigned = assignmentRepo.existsByCustomerIdAndStaffId(customerId, staffId);
         if (alreadyAssigned) {
             throw new BuildingAssignedException("Bạn đã nhận khách hàng này rồi");
         }
-        
+
         CustomerEntity customer = validateAndGetCustomer(customerId);
         UserEntity staff = validateAndGetUser(staffId);
-        
+
         AssignmentCustomerEntity assignment = new AssignmentCustomerEntity();
         assignment.setCustomer(customer);
         assignment.setStaff(staff);
-        
+
         assignmentRepo.save(assignment);
     }
 
@@ -150,17 +147,17 @@ public class AssignmentCustomerServiceImpl implements AssignmentCustomerService 
     public void unassignCurrentStaff(Integer customerId) {
         validateRequiredFields(customerId, "bỏ nhận customer");
         validateCustomerApproved(customerId);
-        
+
         Integer staffId = SecurityUtils.getCurrentUserId();
         if (staffId == null) {
             throw new BuildingAssignedException("Không thể xác định user hiện tại");
         }
-        
+
         boolean exists = assignmentRepo.existsByCustomerIdAndStaffId(customerId, staffId);
         if (!exists) {
             throw new BuildingAssignedException("Bạn chưa nhận khách hàng này, không thể bỏ nhận");
         }
-        
+
         assignmentRepo.deleteByCustomerIdAndStaffId(customerId, staffId);
     }
 
@@ -169,14 +166,14 @@ public class AssignmentCustomerServiceImpl implements AssignmentCustomerService 
         if (customerId == null || staffId == null) {
             return false;
         }
-        
+
         if (!isCustomerApproved(customerId)) {
             return false;
         }
-        
+
         return assignmentRepo.existsByCustomerIdAndStaffId(customerId, staffId);
     }
-    
+
     @Override
     public List<Integer> getMyAssignedCustomers() {
         Integer staffId = SecurityUtils.getCurrentUserId();
