@@ -2,7 +2,7 @@ import axios from "axios";
 import Cookies from "js-cookie";
 
 export const axiosClient = axios.create({
-  baseURL: "http://localhost:8083/api",
+  baseURL: "https://rearrange-flagship-husked.ngrok-free.dev/api",
   headers: { "Content-Type": "application/json" },
 });
 
