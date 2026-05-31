@@ -3,7 +3,10 @@ import Cookies from "js-cookie";
 
 export const axiosClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
-  headers: { "Content-Type": "application/json" },
+  headers: { 
+    "Content-Type": "application/json",
+    "ngrok-skip-browser-warning": "true"
+  },
 });
 
 axiosClient.interceptors.request.use(
