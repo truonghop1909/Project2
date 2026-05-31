@@ -20,22 +20,22 @@ public class BuildingEntity {
     // === ĐỊA CHỈ ===
     @Column(name = "street")
     private String street;
-    
+
     // === ĐỊA CHỈ MỚI (SAU 07/2025) ===
     @Column(name = "province_id", length = 10)
     private String provinceId;
-    
+
     @Column(name = "province_name", length = 100)
     private String provinceName;
-    
+
     @Column(name = "ward_code", length = 10)
     private String wardCode;
-    
+
     @Column(name = "ward_name", length = 100)
     private String wardName;
-    
+
     @Column(name = "full_address", length = 500)
-    private String fullAddress;  // Địa chỉ đầy đủ, có thể computed từ các field khác
+    private String fullAddress; // Địa chỉ đầy đủ, có thể computed từ các field khác
 
     /* ===== BUILDING INFO ===== */
     @Column(name = "structure")
@@ -101,8 +101,7 @@ public class BuildingEntity {
     @Column(name = "brokerage_fee")
     private Double brokerageFee;
 
-    @Lob
-    @Column(name = "note")
+    @Column(name = "note", columnDefinition = "TEXT")
     private String note;
 
     @Column(name = "google_map_link", length = 500)
@@ -156,57 +155,57 @@ public class BuildingEntity {
     public void setStreet(String street) {
         this.street = street;
     }
-    
+
     // === ĐỊA CHỈ MỚI ===
     public String getProvinceId() {
         return provinceId;
     }
-    
+
     public void setProvinceId(String provinceId) {
         this.provinceId = provinceId;
     }
-    
+
     public String getProvinceName() {
         return provinceName;
     }
-    
+
     public void setProvinceName(String provinceName) {
         this.provinceName = provinceName;
     }
-    
+
     public String getWardCode() {
         return wardCode;
     }
-    
+
     public void setWardCode(String wardCode) {
         this.wardCode = wardCode;
     }
-    
+
     public String getWardName() {
         return wardName;
     }
-    
+
     public void setWardName(String wardName) {
         this.wardName = wardName;
     }
-    
+
     public String getFullAddress() {
         return fullAddress;
     }
-    
+
     public void setFullAddress(String fullAddress) {
         this.fullAddress = fullAddress;
     }
-    
+
     // ✅ GETTER & SETTER CHO THUMBNAIL
     public String getThumbnail() {
         return thumbnail;
     }
-    
+
     public void setThumbnail(String thumbnail) {
         this.thumbnail = thumbnail;
     }
-    
+
     // Helper method để tạo địa chỉ đầy đủ
     @PrePersist
     @PreUpdate
@@ -217,11 +216,13 @@ public class BuildingEntity {
                 address.append(this.street);
             }
             if (this.wardName != null && !this.wardName.isEmpty()) {
-                if (address.length() > 0) address.append(", ");
+                if (address.length() > 0)
+                    address.append(", ");
                 address.append(this.wardName);
             }
             if (this.provinceName != null && !this.provinceName.isEmpty()) {
-                if (address.length() > 0) address.append(", ");
+                if (address.length() > 0)
+                    address.append(", ");
                 address.append(this.provinceName);
             }
             this.fullAddress = address.toString();
