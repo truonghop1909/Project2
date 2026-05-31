@@ -10,7 +10,8 @@ public class BuildingEntityConverter {
 
     /**
      * Chuyển đổi từ DTO sang Entity (cập nhật entity có sẵn)
-     * @param dto BuildingDetailDTO
+     * 
+     * @param dto    BuildingDetailDTO
      * @param entity BuildingEntity (có thể là mới hoặc đã tồn tại)
      */
     public void toEntity(BuildingDetailDTO dto, BuildingEntity entity) {
@@ -67,19 +68,23 @@ public class BuildingEntityConverter {
 
         // Hình ảnh
         entity.setGoogleMapLink(dto.getGoogleMapLink());
-        
-        // Thumbnail (nếu có)
+
+        // KHÔNG cập nhật thumbnail từ DTO (chỉ upload riêng)
+        // Nếu bạn muốn giữ khả năng cập nhật, hãy xử lý URL Cloudinary
         if (dto.getThumbnail() != null && !dto.getThumbnail().isEmpty()) {
-            String thumbnailPath = dto.getThumbnail();
-            if (thumbnailPath.startsWith("/uploads/")) {
-                thumbnailPath = thumbnailPath.substring(9);
+            String thumb = dto.getThumbnail();
+            // Nếu là URL Cloudinary thì giữ nguyên, nếu là local path thì bỏ qua (hoặc
+            // chuyển)
+            if (thumb.startsWith("http://") || thumb.startsWith("https://")) {
+                entity.setThumbnail(thumb);
             }
-            entity.setThumbnail(thumbnailPath);
+            // Không xử lý local path nữa vì ta đã chuyển sang Cloudinary
         }
     }
 
     /**
      * Tạo entity mới từ DTO
+     * 
      * @param dto BuildingDetailDTO
      * @return BuildingEntity
      */
