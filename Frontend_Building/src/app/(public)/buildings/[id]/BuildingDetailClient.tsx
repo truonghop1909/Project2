@@ -20,9 +20,10 @@ import { PublicContactModal } from '@/features/building/components/public/Public
 
 const formatRentAreas = (rentAreas?: number[]): string =>
   rentAreas?.length ? rentAreas.map((a) => a.toLocaleString()).join(', ') + ' m²' : '—';
-const [showContactModal, setShowContactModal] = useState(false);
 
 export function BuildingDetailClient({ building }: { building: BuildingDetail }) {
+  const [showContactModal, setShowContactModal] = useState(false);
+
   const sections = [
     {
       title: 'Thông tin cơ bản',
@@ -99,7 +100,7 @@ export function BuildingDetailClient({ building }: { building: BuildingDetail })
           <div className="text-gray-700 whitespace-pre-wrap p-4 bg-gray-50 rounded-lg">{building.note}</div>
         </Section>
       )}
-      // Sửa nút "Liên hệ ngay"
+      {/* Nút "Liên hệ ngay" */}
       <div className="mt-8 flex justify-center">
         <button
           onClick={() => setShowContactModal(true)}
@@ -108,7 +109,7 @@ export function BuildingDetailClient({ building }: { building: BuildingDetail })
           📞 Liên hệ ngay
         </button>
       </div>
-      // Thêm modal cuối component (trước khi đóng div container)
+      {/* Modal liên hệ */}
       {showContactModal && (
         <PublicContactModal
           buildingName={building.name}

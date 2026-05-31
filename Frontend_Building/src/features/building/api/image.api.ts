@@ -2,6 +2,9 @@
 import { axiosClient } from "@/shared/services/axiosClient";
 import { SubImage } from "../types/building.type";
 
+// Lấy BACKEND_URL từ biến môi trường (đã được cấu hình trong .env)
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "";
+
 export const imageApi = {
   // ==================== MAIN IMAGE (THUMBNAIL) ====================
   uploadMainImage: (buildingId: number, file: File) => {
@@ -69,22 +72,30 @@ export const imageApi = {
 
   // ==================== HELPER FUNCTIONS ====================
   /**
-   * Lấy URL đầy đủ của ảnh
-   * - Nếu đã là absolute URL (http:// hoặc https://) thì trả về nguyên bản
-   * - Nếu là relative path, gắn với base URL từ env (chỉ dùng nếu backend vẫn serve ảnh local)
-   * @param path - Đường dẫn ảnh (có thể là relative hoặc absolute URL)
+   * Lấy URL đầy đủ của ảnh (xử lý cả đường dẫn cũ bị lỗi như /uploads/https://...)
+   * @param path - Đường dẫn ảnh từ API (có thể là relative hoặc absolute URL)
    */
   getImageUrl: (path?: string): string => {
     if (!path) return "";
-    if (path.startsWith("http://") || path.startsWith("https://")) {
-      return path;
+
+    // Loại bỏ tiền tố /uploads/ nếu có (fix dữ liệu cũ bị sai)
+    let cleanPath = path;
+    if (cleanPath.startsWith("/uploads/")) {
+      cleanPath = cleanPath.substring(9); // bỏ '/uploads/'
     }
-    // Fallback: nếu vẫn dùng đường dẫn local (ví dụ từ backend cũ)
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "";
-    if (path.startsWith("/")) {
-      return `${baseUrl}${path}`;
+
+    // Nếu sau khi làm sạch, nó là URL tuyệt đối -> trả về nguyên bản
+    if (cleanPath.startsWith("http://") || cleanPath.startsWith("https://")) {
+      return cleanPath;
     }
-    return `${baseUrl}/uploads/${path}`;
+
+    // Nếu là đường dẫn tương đối (bắt đầu bằng /) -> ghép với BACKEND_URL
+    if (cleanPath.startsWith("/")) {
+      return `${BACKEND_URL}${cleanPath}`;
+    }
+
+    // Fallback: coi như tên file, ghép với /uploads/
+    return `${BACKEND_URL}/uploads/${cleanPath}`;
   },
 
   isValidImage: (file: File): { valid: boolean; error?: string } => {

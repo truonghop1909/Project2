@@ -5,9 +5,25 @@ export { FALLBACK_IMAGE };
 
 export const getImageUrl = (path?: string): string => {
   if (!path) return FALLBACK_IMAGE;
-  if (path.startsWith("http")) return path;
-  if (path.startsWith("/")) return `${BACKEND_URL}${path}`;
-  return `${BACKEND_URL}/uploads/${path}`;
+
+  // Loại bỏ prefix /uploads/ nếu có, sau đó kiểm tra nếu phần còn lại là URL
+  let cleanPath = path;
+  if (cleanPath.startsWith('/uploads/')) {
+    cleanPath = cleanPath.substring(9); // bỏ '/uploads/'
+  }
+
+  // Nếu sau khi loại bỏ, nó bắt đầu bằng http:// hoặc https:// -> trả về nguyên bản
+  if (cleanPath.startsWith('http://') || cleanPath.startsWith('https://')) {
+    return cleanPath;
+  }
+
+  // Nếu vẫn là relative path (bắt đầu bằng /) -> ghép BACKEND_URL
+  if (cleanPath.startsWith('/')) {
+    return `${BACKEND_URL}${cleanPath}`;
+  }
+
+  // Fallback: nếu không bắt đầu bằng /, coi là tên file và ghép /uploads/
+  return `${BACKEND_URL}/uploads/${cleanPath}`;
 };
 
 export const formatPrice = (price?: number): string => {
