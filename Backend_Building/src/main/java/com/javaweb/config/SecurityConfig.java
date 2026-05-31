@@ -49,7 +49,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         web.ignoring().antMatchers(
                 "/uploads/**",
                 "/static/**",
-                "/public/**" // Cho phép public routes
+                "/public/**"
         );
     }
 
@@ -62,15 +62,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeRequests()
-                // Public routes - không cần authentication
                 .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                // Chỉ cho phép login, register public, còn logout yêu cầu authenticated
                 .antMatchers("/api/auth/login", "/api/auth/register").permitAll()
                 .antMatchers("/api/public/**").permitAll()
                 .antMatchers("/uploads/**").permitAll()
-                // Logout yêu cầu đã đăng nhập
                 .antMatchers("/api/auth/logout").authenticated()
-                // Các API khác
                 .antMatchers("/api/building/**").authenticated()
                 .antMatchers("/api/admin/**").hasRole(UserRole.ADMIN)
                 .anyRequest().authenticated()
@@ -91,6 +87,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         configuration.addAllowedOrigin("http://localhost:3000");
         configuration.addAllowedOrigin("http://localhost:3001");
         configuration.addAllowedOrigin("http://localhost:3002");
+        configuration.addAllowedOrigin("https://frontendbuilding.vercel.app");
+        configuration.addAllowedOrigin("https://frontendbuilding-h9ma51g6a-truonghops-projects.vercel.app");
         configuration.addAllowedMethod("*");
         configuration.addAllowedHeader("*");
         configuration.addExposedHeader("Authorization");
