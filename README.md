@@ -1,204 +1,145 @@
 # 🏢 Building Management System (Fullstack)
 
-A fullstack web application for managing real estate buildings, customers and staff assignments.
-The system allows administrators to manage buildings, assign staff, track customers and manage transactions.
+A fullstack web application for managing real estate buildings, customers, and staff assignments. The system allows administrators to manage buildings, assign staff, track customers, and handle transactions, while staff members can manage their assigned buildings and customers.
+
+---
 
 ## 🚀 Tech Stack
 
-### Backend
-
-* **Java Spring Boot**
-* **Spring Security + JWT Authentication**
-* **Spring Data JPA / Hibernate**
-* **MySQL**
-* RESTful API architecture
-
-### Frontend
-
-* **Next.js**
-* **TypeScript**
-* **React Hooks**
-* **TailwindCSS**
+| Category       | Technology                                                        |
+| -------------- | ----------------------------------------------------------------- |
+| **Backend**    | Java Spring Boot, Spring Security, JWT, Spring Data JPA, Hibernate, MySQL |
+| **Frontend**   | Next.js (App Router), TypeScript, React Hooks, TailwindCSS        |
+| **API**        | RESTful                                                           |
 
 ---
 
-# 📌 Main Features
+## 📌 Main Features
 
-## 👨‍💼 Admin
+### 👨‍💼 Admin
+- Manage buildings (CRUD)
+- Assign buildings to staff
+- Manage customers (approve/reject)
+- Manage users and roles
+- Track transactions
 
-* Manage buildings (CRUD)
-* Assign buildings to staff
-* Manage customers
-* Manage users and roles
-* Track transactions
-
-## 👨‍🔧 Staff
-
-* View assigned buildings
-* Manage assigned customers
-* Update transaction status
-* Track tasks
+### 👨‍🔧 Staff
+- View assigned buildings
+- Manage assigned customers
+- Update transaction status
+- Track tasks
 
 ---
 
-# 🧱 Project Structure
-
-```
+## 🧱 Project Structure
 Building/
-│
 ├── Backend_Building/
-│   ├── api/
-│   ├── converter/
-│   ├── repository/
-│   ├── service/
-│   ├── security/
-│   └── entity/
+│ ├── api/ # REST controllers
+│ ├── converter/ # DTO converters
+│ ├── repository/ # JPA repositories
+│ ├── service/ # Business logic
+│ ├── security/ # JWT & security config
+│ └── entity/ # JPA entities
 │
 └── Frontend_Building/
-    ├── app/
-    ├── features/
-    │   ├── auth
-    │   ├── building
-    │   ├── customer
-    │   ├── assignment
-    │   └── users
-    └── shared/
-```
+├── app/ # Next.js App Router pages & layouts
+├── features/ # Feature-based modules (auth, building, customer, assignment, users)
+├── components/ # Reusable UI components (ui, common, layout)
+├── hooks/ # Custom hooks
+├── lib/ # Utilities (axios, cookie, jwt)
+├── types/ # Global TypeScript types
+└── utils/ # Helper functions
+
+text
 
 ---
 
-# 🔐 Authentication
+## 🔐 Authentication
 
-The system uses **JWT Authentication**.
+The system uses **JWT Authentication** with role‑based access control (Admin / Staff).
 
-Workflow:
-
-1. User login
-2. Backend generates JWT token
-3. Token stored on client
-4. Every request includes Authorization header
-
-```
+**Workflow:**
+1. User logs in with credentials.
+2. Backend validates and returns a JWT token.
+3. Frontend stores the token (HTTP‑only cookie or localStorage).
+4. Every subsequent request includes the token in the `Authorization` header:
 Authorization: Bearer <token>
-```
+
+text
 
 ---
 
-# ⚙️ Backend Setup
+## ⚙️ Backend Setup
 
-### 1️⃣ Clone repository
+### 1️⃣ Clone the repository
+```bash
+git clone https://github.com/yourusername/building-management.git
+cd Backend_Building
+2️⃣ Configure database
+Edit src/main/resources/application.properties:
 
-```
-git clone https://github.com/yourusername/project.git
-```
-
-### 2️⃣ Configure database
-
-Edit:
-
-```
-application.properties
-```
-
-Example:
-
-```
+properties
 spring.datasource.url=jdbc:mysql://localhost:3306/buildingdb
 spring.datasource.username=root
 spring.datasource.password=yourpassword
-```
-
-### 3️⃣ Run Spring Boot
-
-```
+3️⃣ Run the application
+bash
 mvn spring-boot:run
-```
+Backend runs at: http://localhost:8083
 
-Backend runs at:
-
-```
-http://localhost:8083
-```
-
----
-
-# 💻 Frontend Setup
-
-### Install dependencies
-
-```
+💻 Frontend Setup
+1️⃣ Navigate to frontend directory
+bash
+cd Frontend_Building
+2️⃣ Install dependencies
+bash
 npm install
-```
-
-### Run development server
-
-```
+3️⃣ Run development server
+bash
 npm run dev
-```
+Frontend runs at: http://localhost:3000
 
-Frontend runs at:
+Make sure the backend is running before using the frontend.
 
-```
-http://localhost:3000
-```
-
----
-
-# 📊 System Architecture
-
-```
-Frontend (NextJS)
-        ↓
-REST API
-        ↓
+📊 System Architecture
+text
+Frontend (Next.js)
+       ↓
+   REST API
+       ↓
 Backend (Spring Boot)
-        ↓
-Database (MySQL)
-```
+       ↓
+  Database (MySQL)
+📸 Screenshots
+(Add screenshots of your system here – e.g., dashboard, building list, customer management, assignment modal)
 
----
-
-# 📷 Screenshots
-
-*(Add screenshots of your system here)*
-
-Examples:
-
-* Dashboard
-* Building Management
-* Customer Management
-* Assignment Modal
-
----
-
-# 📚 Learning Goals
-
+📚 Learning Goals
 This project was built to practice:
 
-* Fullstack web development
-* REST API design
-* Authentication with JWT
-* Frontend architecture with NextJS
-* Role-based access control
+Fullstack web development
 
----
+REST API design
 
-# 👨‍💻 Author
+Authentication & authorization with JWT
 
+Modern frontend architecture with Next.js (App Router)
+
+Role‑based access control (RBAC)
+
+👨‍💻 Author
 Student project for learning fullstack development.
+Tech interests: Backend Development, System Design, Web Architecture.
 
-Tech interests:
+⭐ Future Improvements
+Pagination & search optimization (server‑side)
 
-* Backend Development
-* System Design
-* Web Architecture
+WebSocket notifications for real‑time updates
 
----
+File upload for building images (cloud storage)
 
-# ⭐ Future Improvements
+Docker deployment (docker-compose)
 
-* Pagination & search optimization
-* WebSocket notifications
-* File upload for building images
-* Docker deployment
+Unit & integration tests
 
+📄 License
+This project is for educational purposes only.
