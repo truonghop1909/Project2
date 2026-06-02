@@ -38,10 +38,10 @@ public interface CustomerRepository extends JpaRepository<CustomerEntity, Intege
                         "FROM customer c " +
                         "LEFT JOIN `transaction` t ON t.customer_id = c.id " +
                         "WHERE c.approval_status = '" + CustomerApprovalStatus.APPROVED + "' " +
-                        "AND (:fullname IS NULL OR :fullname = '' OR LOWER(c.fullname) LIKE LOWER(CONCAT('%', :fullname, '%'))) " +
+                        "AND (:fullname IS NULL OR :fullname = '' OR LOWER(c.fullname) LIKE LOWER(CONCAT('%', :fullname, '%'))) "
+                        +
                         "AND (:phone IS NULL OR :phone = '' OR c.phone LIKE CONCAT('%', :phone, '%')) " +
-                        "AND (:transactionTypeId IS NULL OR t.transactiontype_id = :transactionTypeId)",
-                        nativeQuery = true)
+                        "AND (:transactionTypeId IS NULL OR t.transactiontype_id = :transactionTypeId)", nativeQuery = true)
         List<CustomerEntity> searchApprovedCustomersForStaff(
                         @Param("fullname") String fullname,
                         @Param("phone") String phone,
@@ -74,4 +74,18 @@ public interface CustomerRepository extends JpaRepository<CustomerEntity, Intege
          * =========================================================
          */
         boolean existsByIdAndApprovalStatus(Integer id, String approvalStatus);
+
+        // Đếm theo trạng thái duyệt
+        Long countByApprovalStatus(String status);
+
+        // Số khách mới theo tháng (6 tháng gần nhất) – native query
+        @Query(value = "SELECT DATE_FORMAT(created_at, '%Y-%m') as month, COUNT(*) " +
+                        "FROM customer WHERE created_at IS NOT NULL " +
+                        "GROUP BY month ORDER BY month DESC LIMIT 6", nativeQuery = true)
+        List<Object[]> countNewCustomersByMonth();
+
+        // Thời gian duyệt trung bình (giờ) – native query, trả về Double (có thể null)
+        @Query(value = "SELECT AVG(TIMESTAMPDIFF(HOUR, created_at, approved_at)) " +
+                        "FROM customer WHERE approval_status = 'APPROVED' AND approved_at IS NOT NULL", nativeQuery = true)
+        Double getAverageApprovalTimeHours();
 }

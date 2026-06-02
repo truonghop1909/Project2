@@ -9,4 +9,6 @@ import com.javaweb.repository.entity.BuildingImageEntity;
 public interface BuildingImageRepository extends JpaRepository<BuildingImageEntity, Integer> {
     List<BuildingImageEntity> findByBuilding_Id(Integer buildingId);
     void deleteByBuilding_Id(Integer buildingId);
+    // Thêm dòng này
+    long count();
 }
