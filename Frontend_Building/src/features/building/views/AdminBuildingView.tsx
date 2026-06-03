@@ -80,22 +80,6 @@ export default function AdminBuildingPage() {
           />
         </div>
 
-        {/* BẢNG 2: TÒA NHÀ CHƯA GIAO */}
-        <div className="space-y-3">
-          <h2 className="text-lg font-semibold">Tòa nhà chưa được giao</h2>
-          <BuildingTable
-            buildings={unassignedBuildings}
-            permission={BUILDING_PERMISSIONS.ADMIN}
-            loading={loading}
-            pagination={allPagination}
-            onPageChange={goToAllPage}
-            onPageSizeChange={changeAllPageSize}
-            onAssign={(id) => setAssignBuildingId(id)}     // giao cho staff
-            onEdit={(id) => setEditBuildingId(id)}
-            onDelete={deleteBuilding}
-            onView={setViewBuildingId}
-          />
-        </div>
       </div>
 
       {/* MODAL HUB */}

@@ -39,15 +39,17 @@ public class AdminStatisticsServiceImpl implements AdminStatisticsService {
         }
         dto.setBuildingsByProvince(provinceMap);
 
+        // ✅ SỬA LỖI: lấy đúng thứ tự cột và ép kiểu an toàn
         List<Object[]> topBuildingData = buildingRepo.findTop5RentBuildingsNative();
         List<TopBuildingDTO> topBuildings = new ArrayList<>();
         if (topBuildingData != null) {
             for (Object[] row : topBuildingData) {
                 TopBuildingDTO b = new TopBuildingDTO();
-                b.setBuildingId(((Number) row[0]).intValue());
-                b.setName((String) row[1]);
-                b.setRentPrice((Double) row[2]);
-                b.setProvinceName((String) row[3]);
+                b.setBuildingId(((Number) row[0]).intValue()); // id
+                b.setName((String) row[1]); // name
+                // row[2] full_address, row[3] floor_area, row[4] rent_price, row[5] manager_name, row[6] thumbnail, row[7] province_name
+                b.setRentPrice(((Number) row[4]).doubleValue()); // rent_price
+                b.setProvinceName((String) row[7]); // province_name
                 topBuildings.add(b);
             }
         }

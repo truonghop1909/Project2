@@ -20,7 +20,7 @@ export const BUILDING_PERMISSIONS: Record<BuildingRole, BuildingPermission> = {
   },
   STAFF: {
     canCreate: true,
-    canEdit: true,
+    canEdit: false,  // staff chỉ được sửa tòa nhà mình quản lý ở bảng ALL, không sửa ở bảng MY
     canDelete: false,
     canAssign: false,
     canUnassign: true,

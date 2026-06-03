@@ -5,31 +5,48 @@ public class TopBuildingDTO {
     private String name;
     private Double rentPrice;
     private String provinceName;
-    public Integer getBuildingId() {
-        return buildingId;
-    }
-    public void setBuildingId(Integer buildingId) {
+
+    // Constructor mặc định (cần cho Jackson deserialization)
+    public TopBuildingDTO() {}
+
+    // Constructor có tham số (dùng để tạo object từ API)
+    public TopBuildingDTO(Integer buildingId, String name, Double rentPrice, String provinceName) {
         this.buildingId = buildingId;
-    }
-    public String getName() {
-        return name;
-    }
-    public void setName(String name) {
         this.name = name;
-    }
-    public Double getRentPrice() {
-        return rentPrice;
-    }
-    public void setRentPrice(Double rentPrice) {
         this.rentPrice = rentPrice;
-    }
-    public String getProvinceName() {
-        return provinceName;
-    }
-    public void setProvinceName(String provinceName) {
         this.provinceName = provinceName;
     }
 
-    // getters & setters
-    
+    // Getters và Setters
+    public Integer getBuildingId() {
+        return buildingId;
+    }
+
+    public void setBuildingId(Integer buildingId) {
+        this.buildingId = buildingId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Double getRentPrice() {
+        return rentPrice;
+    }
+
+    public void setRentPrice(Double rentPrice) {
+        this.rentPrice = rentPrice;
+    }
+
+    public String getProvinceName() {
+        return provinceName;
+    }
+
+    public void setProvinceName(String provinceName) {
+        this.provinceName = provinceName;
+    }
 }

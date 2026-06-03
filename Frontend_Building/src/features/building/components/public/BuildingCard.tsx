@@ -18,9 +18,9 @@ export const BuildingCard: React.FC<BuildingCardProps> = ({ building, onClick })
   };
 
   return (
-    <div 
+    <div
       onClick={onClick}
-      className="group bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1"
+      className="group bg-white rounded-xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 cursor-pointer transform hover:-translate-y-2 hover:border-b-4 hover:border-accent"
     >
       {/* Image */}
       <div className="relative h-48 overflow-hidden bg-gray-200">
@@ -46,18 +46,18 @@ export const BuildingCard: React.FC<BuildingCardProps> = ({ building, onClick })
       {/* Content */}
       <div className="p-4">
         <h3 className="text-lg font-bold text-gray-800 mb-2 line-clamp-1">{building.name}</h3>
-        
+
         <div className="space-y-2 text-sm text-gray-600">
           <div className="flex items-center gap-2">
             <MapPin size={16} className="text-gray-400 flex-shrink-0" />
             <span className="line-clamp-1">{building.address}</span>
           </div>
-          
+
           <div className="flex items-center gap-2">
             <Ruler size={16} className="text-gray-400" />
             <span>Diện tích: {building.floorArea?.toLocaleString()} m²</span>
           </div>
-          
+
           <div className="flex items-center gap-2">
             <DollarSign size={16} className="text-green-500" />
             <span className="text-green-600 font-semibold">{formatPrice(building.rentPrice)}</span>

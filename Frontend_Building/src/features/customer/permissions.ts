@@ -23,8 +23,8 @@ export const CUSTOMER_PERMISSIONS: Record<CustomerRole, CustomerPermission> = {
     canReject: true,
   },
   STAFF: {
-    canCreate: true,
-    canEdit: true,
+    canCreate: false,
+    canEdit: false,
     canUnassign: true,
     canAssign: false, // staff tự nhận bằng assignCurrent/unassignCurrent
     canViewTransactions: true,

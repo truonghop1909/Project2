@@ -63,9 +63,6 @@ export default function MyCustomersPage() {
       <div className="mx-auto max-w-7xl space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-semibold">Khách hàng đã nhận</h1>
-          <button onClick={() => setShowCreate(true)} className="h-10 px-5 rounded-lg bg-black text-white">
-            + Thêm khách hàng
-          </button>
         </div>
 
         {/* Dùng CustomerFilter giống all-customers nhưng không có approvalStatus và staff filters */}

@@ -54,3 +54,18 @@ export interface StaffStatisticsDTO {
   recentCustomers: CustomerDTO[];
   recentTransactions: TransactionDTO[];
 }
+
+export interface PublicStatisticsDTO {
+  totalBuildings: number;
+  minRentPrice: number;
+  maxRentPrice: number;
+  avgRentPrice: number;
+  buildingsByProvince: Record<string, number>;
+  top5HighestRentBuildings: TopBuildingDTO[];
+}
+
+export interface TopStaffTransactionDTO {
+  staffId: number;
+  staffName: string;
+  transactionCount: number;
+}

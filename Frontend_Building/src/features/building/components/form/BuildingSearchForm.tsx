@@ -5,7 +5,6 @@ import { BuildingSearchDTO } from "../../types/building.type";
 import { Province, Ward } from "../../types/address.type";  
 import { addressApi } from "../../api/Address.api";
 
-
 interface Props {
   onSearch: (params: BuildingSearchDTO) => void;
 }
@@ -17,7 +16,6 @@ export default function BuildingSearchForm({ onSearch }: Props) {
   const [loadingProvinces, setLoadingProvinces] = useState(false);
   const [loadingWards, setLoadingWards] = useState(false);
 
-  // Load provinces khi component mount
   useEffect(() => {
     loadProvinces();
   }, []);
@@ -50,7 +48,6 @@ export default function BuildingSearchForm({ onSearch }: Props) {
       [name]: value === "" ? undefined : value,
     }));
 
-    // Nếu chọn tỉnh mới, load wards và reset wardCode
     if (name === "provinceId" && value) {
       loadWardsByProvince(parseInt(value));
       setForm(prev => ({ ...prev, wardCode: undefined }));
@@ -61,13 +58,11 @@ export default function BuildingSearchForm({ onSearch }: Props) {
   };
 
   const handleSearch = () => {
-    // Lọc bỏ các field undefined hoặc rỗng
     const searchParams = Object.fromEntries(
       Object.entries(form).filter(([_, value]) => 
         value !== undefined && value !== "" && value !== null
       )
     ) as BuildingSearchDTO;
-    
     onSearch(searchParams);
   };
 
@@ -77,10 +72,10 @@ export default function BuildingSearchForm({ onSearch }: Props) {
     onSearch({});
   };
 
-  const inputStyle = "h-10 rounded-lg border px-3 text-sm focus:outline-none focus:ring-2 focus:ring-black";
+  const inputStyle = "h-10 rounded-lg border px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full";
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border p-5 space-y-4">
+    <div className="space-y-5">
       {/* Row 1 - Thông tin cơ bản */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <input
@@ -90,7 +85,6 @@ export default function BuildingSearchForm({ onSearch }: Props) {
           className={inputStyle}
           placeholder="Tên tòa nhà"
         />
-
         <input
           name="street"
           value={form.street || ""}
@@ -98,7 +92,6 @@ export default function BuildingSearchForm({ onSearch }: Props) {
           className={inputStyle}
           placeholder="Số nhà / Đường"
         />
-
         <select
           name="provinceId"
           value={form.provinceId || ""}
@@ -113,7 +106,6 @@ export default function BuildingSearchForm({ onSearch }: Props) {
             </option>
           ))}
         </select>
-
         <select
           name="wardCode"
           value={form.wardCode || ""}
@@ -140,7 +132,6 @@ export default function BuildingSearchForm({ onSearch }: Props) {
           className={inputStyle}
           placeholder="DT sàn từ (m²)"
         />
-
         <input
           name="floorAreaTo"
           value={form.floorAreaTo ?? ""}
@@ -149,7 +140,6 @@ export default function BuildingSearchForm({ onSearch }: Props) {
           className={inputStyle}
           placeholder="DT sàn đến (m²)"
         />
-
         <input
           name="rentPriceFrom"
           value={form.rentPriceFrom ?? ""}
@@ -158,7 +148,6 @@ export default function BuildingSearchForm({ onSearch }: Props) {
           className={inputStyle}
           placeholder="Giá từ (VNĐ)"
         />
-
         <input
           name="rentPriceTo"
           value={form.rentPriceTo ?? ""}
@@ -167,7 +156,6 @@ export default function BuildingSearchForm({ onSearch }: Props) {
           className={inputStyle}
           placeholder="Giá đến (VNĐ)"
         />
-
         <select
           name="sortBy"
           value={form.sortBy || ""}
@@ -191,14 +179,12 @@ export default function BuildingSearchForm({ onSearch }: Props) {
           <option value="ASC">Tăng dần</option>
           <option value="DESC">Giảm dần</option>
         </select>
-
         <button
           onClick={handleSearch}
-          className="h-10 rounded-lg bg-black text-white text-sm font-medium hover:bg-gray-800 transition"
+          className="h-10 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition"
         >
           Tìm kiếm
         </button>
-
         <button
           onClick={handleReset}
           className="h-10 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 transition"

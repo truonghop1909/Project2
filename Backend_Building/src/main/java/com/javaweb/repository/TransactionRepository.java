@@ -68,4 +68,10 @@ public interface TransactionRepository extends JpaRepository<TransactionEntity, 
 
         // Đếm tổng số giao dịch của staff
         Long countByStaffId(Integer staffId);
+
+        @Query(value = "SELECT u.id, u.fullname, COUNT(t.id) as trans_count " +
+                        "FROM users u " +
+                        "JOIN `transaction` t ON u.id = t.staff_id " +
+                        "GROUP BY u.id ORDER BY trans_count DESC LIMIT 5", nativeQuery = true)
+        List<Object[]> findTop5StaffByTransactionCount();
 }

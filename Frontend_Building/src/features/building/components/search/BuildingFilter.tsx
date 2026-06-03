@@ -8,7 +8,7 @@ export default function BuildingFilter({
   onSearch: (params?: any) => void;
 }) {
   return (
-    <div className="mb-4 bg-white p-4 shadow">
+    <div className="mb-8 bg-white rounded-xl shadow-lg p-5">
       <BuildingSearchForm onSearch={onSearch} />
     </div>
   );
