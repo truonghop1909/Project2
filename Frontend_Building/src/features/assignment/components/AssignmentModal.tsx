@@ -40,7 +40,7 @@ export default function AssignmentModal({
   }, [buildingId]);
 
   const title = building
-    ? `${building.name} - ${building.street}, ${building.ward}`
+    ? `${building.name} - ${building.street}}`
     : `#${buildingId}`;
 
   return (
